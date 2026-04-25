@@ -1,0 +1,18 @@
+# Secretos
+.env
+*.db
+
+# Videos generados (se guardan en Cloudinary)
+outputs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Sistema
+.DS_Store
+Thumbs.db

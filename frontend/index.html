@@ -1,0 +1,676 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>TikTok AI Studio</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>:root{--bg:#0f0f0f;--surface:#1c1c1c;--surface2:#242424;--border:#2a2a2a;--accent:#6c5ce7;--accent2:#a29bfe;--green:#00b894;--red:#e94560;--text:#fff;--text2:#aaa;--text3:#555}*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow:hidden}/* SIDEBAR */.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;flex-shrink:0}.logo{padding:0 1.5rem 2rem;display:flex;align-items:center;gap:.75rem}.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}.logo-text{font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,var(--accent2),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;cursor:pointer;color:var(--text2);font-size:.88rem;font-weight:500;transition:all .2s;border-left:3px solid transparent}.nav-item:hover{background:var(--surface2);color:var(--text)}.nav-item.active{background:rgba(108,92,231,.12);color:var(--accent2);border-left-color:var(--accent)}.nav-icon{font-size:1rem;width:20px;text-align:center}.sidebar-bottom{margin-top:auto;padding:1rem 1.5rem;border-top:1px solid var(--border)}.user-info{display:flex;align-items:center;gap:.75rem}.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--red));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}.user-name{font-size:.85rem;font-weight:600}.user-plan{font-size:.72rem;color:var(--accent2)}/* MAIN */.main{flex:1;display:flex;overflow:hidden}.editor{flex:1;overflow-y:auto;padding:2rem}.preview-panel{width:300px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem;flex-shrink:0}/* PAGES */.page{display:none}.page.active{display:block}.page-header{margin-bottom:2rem}.page-title{font-size:1.6rem;font-weight:800;margin-bottom:.3rem}.page-sub{color:var(--text2);font-size:.88rem}/* STATS */.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;transition:border .2s}.stat-card:hover{border-color:var(--accent)}.stat-value{font-size:1.8rem;font-weight:800;margin-bottom:.2rem}.stat-label{font-size:.78rem;color:var(--text2)}.stat-card.accent .stat-value{color:var(--accent2)}.stat-card.green .stat-value{color:var(--green)}.stat-card.red .stat-value{color:var(--red)}/* CARDS */.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;transition:border .2s}.card:hover{border-color:var(--border)}.card-title{font-size:.95rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}/* FORMS */label{display:block;margin-bottom:.4rem;font-size:.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:600}input,select,textarea{width:100%;padding:.75rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;margin-bottom:1rem;font-family:"Inter",sans-serif;transition:border .2s}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}textarea{resize:vertical;min-height:100px}select option{background:var(--surface2)}.row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}.toggle-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;padding:.75rem 1rem;background:var(--surface2);border-radius:10px;border:1px solid var(--border)}.toggle-row label{margin:0;font-size:.88rem;color:var(--text);text-transform:none;letter-spacing:0;font-weight:500;flex:1;cursor:pointer}input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}/* BUTTONS */.btn-primary{width:100%;padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),#8e7cf3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,92,231,.4)}.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}.btn-viral{width:100%;padding:.9rem;border-radius:12px;border:2px solid var(--red);background:rgba(233,69,96,.08);color:var(--red);font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;margin-top:.75rem;display:flex;align-items:center;justify-content:center;gap:.5rem}.btn-viral:hover{background:var(--red);color:#fff;transform:translateY(-1px)}.btn-secondary{padding:.65rem 1.25rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif}.btn-secondary:hover{border-color:var(--accent);color:var(--accent2)}/* PROGRESS */.steps-bar{display:flex;gap:.4rem;margin-bottom:1.25rem}.step-item{flex:1;text-align:center;font-size:.7rem;color:var(--text3);font-weight:600;padding:.45rem .25rem;border-radius:8px;background:var(--surface2);transition:all .3s}.step-item.active{background:rgba(108,92,231,.2);color:var(--accent2)}.step-item.done{background:rgba(0,184,148,.12);color:var(--green)}.progress-bar{background:var(--surface2);border-radius:99px;height:8px;overflow:hidden;margin:.5rem 0}.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;border-radius:99px}.progress-pct{text-align:right;font-size:.72rem;color:var(--text2)}.status-msg{font-size:.85rem;color:var(--text2);min-height:1.2rem;display:flex;align-items:center;gap:.5rem}.spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}@keyframes spin{to{transform:rotate(360deg)}}@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}.error-box{background:rgba(233,69,96,.1);border:1px solid rgba(233,69,96,.3);border-radius:10px;padding:1rem;font-size:.82rem;color:#ff8fa3;margin-top:.75rem;line-height:1.5}/* PREVIEW PANEL */.preview-title{font-size:.95rem;font-weight:700;margin-bottom:1.25rem}.video-frame{width:100%;aspect-ratio:9/16;background:var(--surface2);border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border);margin-bottom:1rem}.video-frame video{width:100%;height:100%;object-fit:cover}.video-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--text3)}.ph-icon{font-size:2.5rem}.ph-text{font-size:.8rem;text-align:center;line-height:1.5;padding:0 1rem}.preview-actions{display:flex;flex-direction:column;gap:.6rem}.action-btn{width:100%;padding:.75rem;border-radius:10px;border:none;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;display:flex;align-items:center;justify-content:center;gap:.5rem}.btn-dl{background:linear-gradient(135deg,var(--accent),#8e7cf3);color:#fff}.btn-dl:hover{opacity:.85}.btn-tt{background:linear-gradient(135deg,#010101,#69c9d0);color:#fff}.btn-tt:hover{opacity:.85}.btn-ed{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-ed:hover{border-color:var(--accent);color:var(--accent2)}.action-btn:disabled{opacity:.4;cursor:not-allowed}/* MODAL */.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center}.modal.show{display:flex}.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;max-width:380px;width:90%;text-align:center}.modal-icon{font-size:3rem;margin-bottom:1rem}.modal-title{font-size:1.2rem;font-weight:700;margin-bottom:.5rem}.modal-sub{color:var(--text2);font-size:.85rem;margin-bottom:1.5rem;line-height:1.6}.modal-steps{text-align:left;margin-bottom:1.5rem}.modal-step{display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.85rem}.modal-step:last-child{border-bottom:none}.dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}.dot.done{background:var(--green)}.dot.active{background:var(--accent2);animation:pulse 1s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}.modal-close{padding:.75rem 2rem;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:"Inter",sans-serif;font-weight:600;transition:all .2s}.modal-close:hover{border-color:var(--accent);color:var(--accent2)}/* BADGES */.badge{display:inline-flex;align-items:center;padding:.15rem .55rem;border-radius:99px;font-size:.7rem;font-weight:700;margin-left:.4rem}.badge-new{background:rgba(108,92,231,.2);color:var(--accent2)}.badge-hot{background:rgba(233,69,96,.2);color:var(--red)}.badge-free{background:rgba(0,184,148,.2);color:var(--green)}/* MY VIDEOS */.videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}.video-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s}.video-card:hover{border-color:var(--accent);transform:translateY(-2px)}.vc-thumb{aspect-ratio:9/16;background:linear-gradient(135deg,var(--accent),var(--red));display:flex;align-items:center;justify-content:center;font-size:2rem}.vc-info{padding:.75rem}.vc-title{font-size:.78rem;font-weight:600;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vc-meta{font-size:.7rem;color:var(--text2)}/* RECENT LIST */.recent-list{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem}.list-item{display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border)}.list-item:last-child{border-bottom:none}.li-thumb{width:36px;height:50px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--red));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem}.li-info{flex:1}.li-title{font-size:.83rem;font-weight:600;margin-bottom:.2rem}.li-meta{font-size:.72rem;color:var(--text2)}.li-status{font-size:.7rem;padding:.2rem .55rem;border-radius:99px;font-weight:700}.s-done{background:rgba(0,184,148,.15);color:var(--green)}.s-proc{background:rgba(108,92,231,.15);color:var(--accent2)}/* SETTINGS */.settings-row{display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--surface2);border-radius:10px;margin-bottom:.75rem;border:1px solid var(--border)}.sr-label{font-size:.88rem;font-weight:500}.sr-value{font-size:.82rem;color:var(--text2)}/* SCROLLBAR *//* SCROLLBAR VISIBLE */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#1a1a1a;border-radius:99px}
+::-webkit-scrollbar-thumb{background:#444;border-radius:99px;border:2px solid #1a1a1a}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+::-webkit-scrollbar-corner{background:#1a1a1a}
+/* Editor y sidebar con scroll visible */
+.editor{overflow-y:scroll;scrollbar-width:thin;scrollbar-color:#444 #1a1a1a}
+.sidebar{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#444 #1a1a1a}
+.preview-panel{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#444 #1a1a1a}/* ANIMATIONS */.fade-in{animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}/* === RESPONSIVE === */
+/* Desktop grande (>1400px) */
+@media(min-width:1400px){.sidebar{width:240px}.preview-panel{width:340px}.editor{padding:2.5rem}}
+/* Laptop normal (1024px - 1399px) */
+@media(max-width:1399px) and (min-width:1024px){.sidebar{width:200px}.preview-panel{width:280px}.editor{padding:1.5rem}.stat-value{font-size:1.5rem}}
+/* Laptop pequena / tablet landscape (768px - 1023px) */
+@media(max-width:1023px) and (min-width:768px){.sidebar{width:60px}.logo-text{display:none}.nav-item span:not(.nav-icon){display:none}.nav-item{justify-content:center;padding:.75rem}.sidebar-bottom .user-name,.sidebar-bottom .user-plan{display:none}.avatar{margin:0 auto}.user-info{justify-content:center}.preview-panel{width:240px}.editor{padding:1.25rem}.stats-grid{grid-template-columns:1fr 1fr}.row3{grid-template-columns:1fr 1fr}}
+/* Tablet portrait (600px - 767px) */
+@media(max-width:767px) and (min-width:600px){body{flex-direction:column;overflow:auto}.sidebar{width:100%;flex-direction:row;padding:.6rem 1rem;border-right:none;border-bottom:1px solid var(--border);overflow-x:auto;height:auto;flex-shrink:0}.logo{padding:0 .75rem 0 0}.logo-text{font-size:.95rem}.sidebar-bottom{display:none}.nav-item{padding:.55rem .75rem;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;font-size:.8rem;flex-shrink:0}.nav-item.active{border-left:none;border-bottom-color:var(--accent)}.main{flex-direction:column;overflow:auto}.preview-panel{display:none}.editor{padding:1rem}.stats-grid{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr 1fr}.row3{grid-template-columns:1fr 1fr}.page-title{font-size:1.3rem}}
+/* Movil (< 600px) */
+@media(max-width:599px){body{flex-direction:column;overflow:auto}.sidebar{width:100%;flex-direction:row;padding:.5rem .75rem;border-right:none;border-bottom:1px solid var(--border);overflow-x:auto;height:auto;flex-shrink:0}.logo{padding:0 .5rem 0 0}.logo-text{font-size:.9rem}.sidebar-bottom{display:none}.nav-item{padding:.5rem .6rem;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;font-size:.75rem;flex-shrink:0}.nav-icon{font-size:.9rem}.nav-item.active{border-left:none;border-bottom-color:var(--accent)}.main{flex-direction:column;overflow:auto}.preview-panel{display:none}.editor{padding:.75rem}.stats-grid{grid-template-columns:1fr}.row2,.row3{grid-template-columns:1fr}.page-title{font-size:1.2rem}.videos-grid{grid-template-columns:repeat(2,1fr)}.card{padding:1rem}.btn-primary,.btn-viral{font-size:.9rem}}
+/* ===== AUTH SCREEN ===== */
+#auth-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:100%;max-width:400px;margin:1rem}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.auth-logo-icon{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .75rem}
+.auth-logo-text{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent2),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;background:var(--surface2);border-radius:10px;padding:.25rem}
+.auth-tab{flex:1;padding:.6rem;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif}
+.auth-tab.active{background:var(--accent);color:#fff}
+.auth-input{width:100%;padding:.85rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;margin-bottom:1rem;font-family:"Inter",sans-serif;transition:border .2s;box-sizing:border-box}
+.auth-input:focus{outline:none;border-color:var(--accent)}
+.auth-btn{width:100%;padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),#8e7cf3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;margin-top:.5rem}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,92,231,.4)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.auth-error{background:rgba(233,69,96,.1);border:1px solid rgba(233,69,96,.3);border-radius:8px;padding:.75rem 1rem;font-size:.82rem;color:#ff8fa3;margin-bottom:1rem;display:none}
+.auth-divider{text-align:center;color:var(--text3);font-size:.78rem;margin:.75rem 0}/* ===== AUTH SCREEN ===== */
+.auth-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0f0f0f,#1a1a2e,#0f0f0f);display:flex;align-items:center;justify-content:center;z-index:9999}
+.auth-box{background:#1c1c1c;border:1px solid #2a2a2a;border-radius:20px;padding:2.5rem;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.auth-logo-icon{width:56px;height:56px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .75rem}
+.auth-logo-text{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#a29bfe,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-logo-sub{font-size:.8rem;color:#aaa;margin-top:.25rem}
+.auth-tabs{display:flex;background:#242424;border-radius:10px;padding:4px;margin-bottom:1.5rem}
+.auth-tab{flex:1;padding:.6rem;border-radius:8px;border:none;background:transparent;color:#aaa;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif}
+.auth-tab.active{background:#6c5ce7;color:#fff}
+.auth-field{margin-bottom:1rem}
+.auth-field label{display:block;font-size:.75rem;color:#aaa;margin-bottom:.4rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.auth-field input{width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:"Inter",sans-serif;transition:border .2s}
+.auth-field input:focus{outline:none;border-color:#6c5ce7}
+.auth-btn{width:100%;padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,#6c5ce7,#8e7cf3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;margin-top:.5rem}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,92,231,.4)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.auth-error{background:rgba(233,69,96,.1);border:1px solid rgba(233,69,96,.3);border-radius:8px;padding:.75rem 1rem;font-size:.82rem;color:#ff8fa3;margin-top:.75rem;display:none}
+.auth-success{background:rgba(0,184,148,.1);border:1px solid rgba(0,184,148,.3);border-radius:8px;padding:.75rem 1rem;font-size:.82rem;color:#00b894;margin-top:.75rem;display:none}
+.auth-divider{text-align:center;color:#555;font-size:.8rem;margin:.75rem 0}
+/* ===== AUTH ===== */
+.auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#0f0f0f,#1a1a2e,#2d1b69);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#1c1c1c;border:1px solid #2a2a2a;border-radius:20px;padding:2.5rem;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.auth-logo{text-align:center;margin-bottom:2rem}.auth-logo-icon{font-size:3rem;margin-bottom:.5rem}
+.auth-logo-title{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#a29bfe,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-logo-sub{font-size:.82rem;color:#aaa;margin-top:.25rem}
+.auth-tabs{display:flex;gap:.5rem;margin-bottom:1.75rem;background:#242424;border-radius:10px;padding:.3rem}
+.auth-tab{flex:1;padding:.6rem;border-radius:8px;border:none;background:transparent;color:#aaa;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif}
+.auth-tab.active{background:#6c5ce7;color:#fff}
+.auth-form{display:flex;flex-direction:column;gap:1rem}
+.auth-input-group{display:flex;flex-direction:column;gap:.4rem}
+.auth-label{font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.auth-input{padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:"Inter",sans-serif;transition:border .2s;outline:none}
+.auth-input:focus{border-color:#6c5ce7}
+.auth-btn{padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,#6c5ce7,#8e7cf3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:"Inter",sans-serif;transition:all .2s;margin-top:.5rem}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,92,231,.4)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.auth-error{background:rgba(233,69,96,.1);border:1px solid rgba(233,69,96,.3);border-radius:8px;padding:.75rem 1rem;font-size:.82rem;color:#ff8fa3;display:none}
+.auth-error.show{display:block}
+.auth-divider{text-align:center;color:#555;font-size:.78rem;margin:.25rem 0}
+/* ===== SCROLLBAR VISIBLE ===== */
+html, body { overflow: hidden; }
+.editor {
+  overflow-y: scroll !important;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1a1a1a;
+}
+.editor::-webkit-scrollbar { width: 10px; }
+.editor::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 99px; }
+.editor::-webkit-scrollbar-thumb { background: #555; border-radius: 99px; border: 2px solid #1a1a1a; }
+.editor::-webkit-scrollbar-thumb:hover { background: #6c5ce7; }
+.sidebar {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1a1a1a;
+}
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: #1c1c1c; }
+.sidebar::-webkit-scrollbar-thumb { background: #444; border-radius: 99px; }
+.preview-panel {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1a1a1a;
+}
+.preview-panel::-webkit-scrollbar { width: 6px; }
+.preview-panel::-webkit-scrollbar-track { background: #1c1c1c; }
+.preview-panel::-webkit-scrollbar-thumb { background: #444; border-radius: 99px; }
+
+/* ===== LAYOUT FIX PARA SCROLL ===== */
+html { height: 100%; }
+body { height: 100vh; max-height: 100vh; }
+.main { height: calc(100vh - 0px); overflow: hidden; }
+.editor {
+  height: 100%;
+  overflow-y: scroll !important;
+  scrollbar-width: thin;
+  scrollbar-color: #6c5ce7 #242424;
+}
+.editor::-webkit-scrollbar {
+  width: 10px;
+  display: block !important;
+}
+.editor::-webkit-scrollbar-track {
+  background: #242424;
+  border-radius: 0;
+}
+.editor::-webkit-scrollbar-thumb {
+  background: #6c5ce7;
+  border-radius: 99px;
+  border: 2px solid #242424;
+  min-height: 40px;
+}
+.editor::-webkit-scrollbar-thumb:hover {
+  background: #a29bfe;
+}
+.sidebar {
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #1c1c1c;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: #444; border-radius: 99px; }
+.preview-panel {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #1c1c1c;
+}
+.preview-panel::-webkit-scrollbar { width: 4px; }
+.preview-panel::-webkit-scrollbar-thumb { background: #444; border-radius: 99px; }
+/* Asegurar que las paginas tengan suficiente contenido para hacer scroll */
+.page { min-height: 100%; padding-bottom: 2rem; }
+
+/* ===== EDITOR AVANZADO ===== */
+#page-editor { display:none; }
+#page-editor.active { display:block; }
+.editor-layout { display:grid; grid-template-rows:auto 1fr auto; gap:1rem; height:calc(100vh - 4rem); }
+.editor-toolbar { display:flex; align-items:center; gap:.5rem; padding:.75rem 1rem; background:var(--surface); border:1px solid var(--border); border-radius:12px; flex-wrap:wrap; }
+.tool-btn { padding:.45rem .9rem; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:.8rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:"Inter",sans-serif; }
+.tool-btn:hover { border-color:var(--accent); color:var(--accent2); }
+.tool-btn.active { background:rgba(108,92,231,.2); border-color:var(--accent); color:var(--accent2); }
+.tool-sep { width:1px; height:24px; background:var(--border); margin:0 .25rem; }
+.editor-main { display:grid; grid-template-columns:1fr 280px; gap:1rem; overflow:hidden; }
+.editor-preview { background:var(--surface); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; overflow:hidden; }
+.preview-header { padding:.75rem 1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.preview-header-title { font-size:.85rem; font-weight:700; }
+.preview-canvas-wrap { flex:1; display:flex; align-items:center; justify-content:center; background:#000; padding:1rem; }
+.preview-canvas-wrap video { max-height:400px; border-radius:8px; }
+.preview-controls { padding:.75rem 1rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:.75rem; }
+.play-btn { width:36px; height:36px; border-radius:50%; border:none; background:var(--accent); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem; transition:all .2s; }
+.play-btn:hover { background:var(--accent2); }
+.time-display { font-size:.8rem; color:var(--text2); font-family:monospace; }
+.progress-track { flex:1; height:4px; background:var(--border); border-radius:99px; cursor:pointer; position:relative; }
+.progress-thumb { height:100%; background:var(--accent); border-radius:99px; transition:width .1s; }
+.editor-sidebar { display:flex; flex-direction:column; gap:1rem; overflow-y:auto; }
+.sidebar-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem; }
+.sidebar-card-title { font-size:.82rem; font-weight:700; margin-bottom:.75rem; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+.ai-prompt-input { width:100%; padding:.65rem .9rem; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:.85rem; font-family:"Inter",sans-serif; resize:none; min-height:70px; }
+.ai-prompt-input:focus { outline:none; border-color:var(--accent); }
+.prompt-suggestions { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.5rem; }
+.prompt-chip { padding:.3rem .65rem; border-radius:99px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:.72rem; cursor:pointer; transition:all .2s; }
+.prompt-chip:hover { border-color:var(--accent); color:var(--accent2); }
+.template-grid { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
+.template-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:.65rem; cursor:pointer; transition:all .2s; text-align:center; }
+.template-card:hover { border-color:var(--accent); }
+.template-icon { font-size:1.4rem; margin-bottom:.3rem; }
+.template-name { font-size:.72rem; font-weight:600; color:var(--text2); }
+/* TIMELINE */
+.timeline-section { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem; overflow:hidden; }
+.timeline-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem; }
+.timeline-title { font-size:.85rem; font-weight:700; }
+.timeline-zoom { display:flex; align-items:center; gap:.5rem; font-size:.75rem; color:var(--text2); }
+.timeline-tracks { display:flex; flex-direction:column; gap:.4rem; }
+.track-row { display:flex; align-items:center; gap:.5rem; }
+.track-label { width:60px; font-size:.72rem; color:var(--text2); font-weight:600; text-align:right; flex-shrink:0; }
+.track-area { flex:1; height:32px; background:var(--surface2); border-radius:6px; position:relative; overflow:hidden; cursor:pointer; border:1px solid var(--border); }
+.track-clip { position:absolute; top:2px; bottom:2px; border-radius:4px; display:flex; align-items:center; padding:0 .4rem; font-size:.68rem; font-weight:600; color:#fff; cursor:grab; transition:opacity .2s; white-space:nowrap; overflow:hidden; }
+.track-clip:hover { opacity:.85; }
+.track-clip.video-clip { background:linear-gradient(90deg,var(--accent),#8e7cf3); }
+.track-clip.audio-clip { background:linear-gradient(90deg,var(--green),#00cec9); }
+.track-clip.text-clip { background:linear-gradient(90deg,var(--red),#fd79a8); }
+.track-clip.music-clip { background:linear-gradient(90deg,#fdcb6e,#e17055); }
+.timeline-cursor { position:absolute; top:0; bottom:0; width:2px; background:var(--red); pointer-events:none; }
+.caption-list { display:flex; flex-direction:column; gap:.4rem; max-height:150px; overflow-y:auto; }
+.caption-item { display:flex; align-items:center; gap:.5rem; padding:.4rem .6rem; background:var(--surface2); border-radius:6px; border:1px solid var(--border); }
+.caption-time { font-size:.7rem; color:var(--accent2); font-family:monospace; flex-shrink:0; }
+.caption-text { font-size:.78rem; flex:1; }
+.caption-edit { font-size:.7rem; color:var(--text3); cursor:pointer; }
+.caption-edit:hover { color:var(--accent2); }
+@media(max-width:900px){.editor-main{grid-template-columns:1fr}.editor-sidebar{display:none}}
+/* ===== RESPONSIVE MEJORADO ===== */
+@media(max-width:480px){
+  body{font-size:14px}
+  .sidebar{width:100%;flex-direction:row;padding:.4rem .6rem;height:auto;overflow-x:auto;flex-shrink:0}
+  .logo-text{font-size:.85rem}
+  .nav-item{padding:.45rem .55rem;font-size:.72rem;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0}
+  .nav-item.active{border-left:none;border-bottom-color:var(--accent)}
+  .sidebar-bottom{display:none}
+  .main{flex-direction:column;overflow:auto;height:calc(100vh - 52px)}
+  .editor{padding:.6rem;overflow-y:auto}
+  .preview-panel{display:none}
+  .page-title{font-size:1.1rem}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .row2,.row3{grid-template-columns:1fr}
+  .card{padding:.85rem}
+  .btn-primary,.btn-viral{font-size:.9rem;padding:.85rem}
+  .videos-grid{grid-template-columns:repeat(2,1fr)}
+  .auth-box{padding:1.5rem;margin:.5rem}
+  .steps-bar{gap:.2rem}
+  .step-item{font-size:.62rem;padding:.35rem .15rem}
+}
+@media(min-width:481px) and (max-width:768px){
+  .sidebar{width:100%;flex-direction:row;padding:.5rem .75rem;height:auto;overflow-x:auto;flex-shrink:0}
+  .sidebar-bottom{display:none}
+  .main{flex-direction:column;overflow:auto}
+  .preview-panel{display:none}
+  .editor{padding:.85rem}
+  .row3{grid-template-columns:1fr 1fr}
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(min-width:769px) and (max-width:1024px){
+  .sidebar{width:65px}
+  .logo-text,.user-name,.user-plan{display:none}
+  .nav-item span:not(.nav-icon){display:none}
+  .nav-item{justify-content:center;padding:.75rem}
+  .preview-panel{width:220px}
+}
+/* Asegurar scroll en movil */
+html,body{height:100%;overflow:hidden}
+.main{height:100%;overflow:hidden}
+.editor{height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch}
+
+/* ===== RESPONSIVE MEJORADO ===== */
+/* Movil pequeno < 400px */
+@media(max-width:400px){
+  .auth-box{padding:1.5rem 1rem;margin:.5rem}
+  .page-title{font-size:1rem}
+  .btn-primary,.btn-viral{font-size:.85rem;padding:.8rem}
+  .card{padding:.75rem}
+  .stat-value{font-size:1.4rem}
+}
+/* Tablet 768-1024px */
+@media(max-width:1024px) and (min-width:768px){
+  .preview-panel{width:220px}
+  .editor{padding:1rem}
+}
+/* Asegurar que auth-box no se salga en movil */
+.auth-overlay{padding:.5rem;overflow-y:auto}
+.auth-box{max-height:95vh;overflow-y:auto}
+/* Progress card mejorado */
+#progress-card .steps-bar{flex-wrap:wrap;gap:.3rem}
+#progress-card .step-item{min-width:60px;font-size:.65rem}
+/* Spinner animado */
+.spinner{animation:spin .8s linear infinite}
+/* Video preview responsive */
+.video-frame{max-height:60vh}</style></head><body>
+<div class="sidebar"><div class="logo"><div class="logo-icon"></div><div class="logo-text">🎬 AI Studio</div></div><div class="nav-item active" onclick="showPage('create',this)"><span class="nav-icon">🎬</span>Crear Video</div><div class="nav-item" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</div><div class="nav-item" onclick="showPage('videos',this)"><span class="nav-icon">🎥</span>Mis Videos</div><div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span>Configuracion</div><div class="sidebar-bottom"><div class="user-info"><div class="avatar">RA</div><div><div class="user-name">Usuario Pro</div><div class="user-plan"> Plan Gratis</div></div></div></div></div><div class="main"><div class="editor"><div id="page-create" class="page active fade-in"><div class="page-header"><div class="page-title">🎬 Crear Video</div><div class="page-sub">Genera un video viral para TikTok con IA en segundos</div></div><div class="card"><div class="card-title"> Tu Idea</div><label>Tema o idea del video *</label><textarea id="topic" placeholder="Ej: 5 trucos para dormir mejor, Los mejores destinos 2025, Como ganar dinero online..."></textarea><div class="row2"><div><label>Duracion</label><select id="duration"><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option></select></div><div><label>Idioma</label><select id="language"><option value="es">Espanol</option><option value="en">English</option></select></div></div><div class="row2"><div><label>Nicho</label><select id="niche"><option value="general">General</option><option value="dinero">Dinero</option><option value="gym">Gym / Fitness</option><option value="relaciones">Relaciones</option><option value="motivacion">Motivacion</option><option value="tecnologia">Tecnologia</option><option value="negocios">Negocios</option><option value="salud">Salud</option><option value="entretenimiento">Entretenimiento</option></select></div><div><label>Nicho</label><select id="niche"><option value="general">General</option><option value="dinero">💰 Dinero</option><option value="gym">💪 Gym/Fitness</option><option value="relaciones">❤️ Relaciones</option><option value="motivacion">🔥 Motivacion</option><option value="tecnologia">💻 Tecnologia</option><option value="negocios">�� Negocios</option><option value="salud">🏥 Salud</option></select></div><div><label>Nicho</label><select id="niche"><option value="general">General</option><option value="dinero">Dinero / Finanzas</option><option value="gym">Gym / Fitness</option><option value="relaciones">Relaciones</option><option value="motivacion">Motivacion</option><option value="tecnologia">Tecnologia</option><option value="emprendimiento">Emprendimiento</option><option value="salud">Salud</option><option value="entretenimiento">Entretenimiento</option></select></div><div><label>Estilo</label><select id="style"><option value="entretenido">Entretenido</option><option value="motivacional">Motivacional</option><option value="educativo">Educativo</option><option value="informativo">Informativo</option><option value="humor">Humor</option><option value="viral">🔥 Viral</option><option value="storytelling">📖 Storytelling</option><option value="controversial">⚡ Controversial</option></select></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem"><div><label>Audiencia</label><select id="audience"><option value="general">General</option><option value="jovenes">Jovenes</option><option value="adultos">Adultos</option><option value="emprendedores">Emprendedores</option></select></div><div><label>🎙️ Voz</label><select id="voice"><option value="gtts">Google TTS</option><option value="edge">Edge TTS</option><option value="elevenlabs">ElevenLabs (Ultra-Real)</option></select></div></div></div><div class="card"><div class="card-title"> Opciones</div><div class="toggle-row"><input type="checkbox" id="add_music" checked/><label for="add_music">Musica de fondo automatica segun el tema</label><span class="badge badge-new">NUEVO</span></div><div class="toggle-row"><input type="checkbox" id="add_subtitles" checked/><label for="add_subtitles">Subtitulos automaticos en el video</label></div></div><div class="card" id="progress-card" style="display:none">
+  <div class="card-title">⚡ Generando tu video...</div>
+  <div class="steps-bar">
+    <div class="step-item" id="s1">📝 Guion</div>
+    <div class="step-item" id="s2">🎙️ Voz</div>
+    <div class="step-item" id="s3">🖼️ Imagenes</div>
+    <div class="step-item" id="s4">🎵 Musica</div>
+    <div class="step-item" id="s5">🎬 Video</div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="pfill" style="width:0%"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:.25rem 0">
+    <div class="status-msg">
+      <div class="spinner" id="spin" style="display:none"></div>
+      <span id="smsg">Iniciando...</span>
+    </div>
+    <div class="progress-pct" id="ppct">0%</div>
+  </div>
+  <div id="errmsg"></div>
+</div></div><button class="btn-primary" id="gen-btn" onclick="generateVideo()"> Generar Video con IA</button><button class="btn-viral" onclick="generateViral()"> Generar Video Viral Automaticamente</button></div><div id="page-dashboard" class="page fade-in"><div class="page-header"><div class="page-title">📊 Dashboard </div><div class="page-sub">Resumen de tu actividad</div></div><div class="stats-grid"><div class="stat-card accent"><div class="stat-value" id="stat-total">0</div><div class="stat-label">🎬 Videos Creados</div></div><div class="stat-card green"><div class="stat-value">12.4K</div><div class="stat-label">👁️ Views Estimadas</div></div><div class="stat-card red"><div class="stat-value">8.2%</div><div class="stat-label">📈 Engagement</div></div></div><div id="trending-section" style="margin-top:1.5rem">
+  <div class="card-title">🔥 Temas Tendencia</div>
+  <div id="trending-list" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem">
+    <div style="color:var(--text3);font-size:.82rem">Cargando tendencias...</div>
+  </div>
+</div><div class="recent-list"><div class="card-title"> Videos Recientes</div><div id="recent-list"><div style="color:var(--text3);font-size:.85rem;padding:1rem 0">No hay videos aun. Crea tu primer video!</div></div></div></div><div id="page-videos" class="page fade-in"><div class="page-header"><div class="page-title">🎥 Mis Videos </div><div class="page-sub">Todos tus videos generados</div></div><div class="videos-grid" id="videos-grid"><div style="color:var(--text3);font-size:.85rem;padding:1rem 0">No hay videos aun.</div></div></div><div id="page-settings" class="page fade-in"><div class="page-header"><div class="page-title">⚙️ Configuracion </div><div class="page-sub">Ajusta tu cuenta y preferencias</div></div><div class="card"><div class="card-title"> API Keys</div><div class="settings-row"><div><div class="sr-label">Groq API Key</div><div class="sr-value">gsk_***...KA</div></div><span class="badge badge-free">ACTIVA</span></div><div class="settings-row"><div><div class="sr-label">Pexels API Key</div><div class="sr-value">yDi9***...gu</div></div><span class="badge badge-free">ACTIVA</span></div><div class="settings-row"><div><div class="sr-label">Pixabay API Key</div><div class="sr-value">55476***...d7</div></div><span class="badge badge-free">ACTIVA</span></div></div><div class="card"><div class="card-title"> Perfil</div><div class="settings-row"><div class="sr-label">👤 Nombre</div><div class="sr-value">Usuario Pro</div></div><div class="settings-row"><div class="sr-label">⭐ Plan</div><div class="sr-value">Gratis (ilimitado)</div></div><div class="settings-row"><div class="sr-label">🖥️ Backend</div><div class="sr-value">http://localhost:8000</div></div></div></div></div><div class="preview-panel"><div class="preview-title"> Preview</div><div class="video-frame" id="vframe"><div class="video-placeholder" id="vph" style="background:linear-gradient(135deg,#0f0f0f,#1a1a2e,#2d2d4e);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem"><div style="font-size:3rem">&#127916;</div><div style="font-size:.85rem;color:rgba(255,255,255,.8);text-align:center;padding:0 1rem;line-height:1.6">Tu video aparecera<br>aqui cuando este listo</div><div style="width:60px;height:4px;background:rgba(255,255,255,.3);border-radius:99px;overflow:hidden"><div style="height:100%;width:40%;background:#fff;border-radius:99px;animation:slide 1.5s ease-in-out infinite"></div></div></div><video id="vplayer" style="display:none" controls playsinline></video></div><div class="preview-actions"><button class="action-btn btn-dl" id="btn-dl" disabled onclick="downloadVideo()"> Descargar MP4</button><button class="action-btn btn-tt" id="btn-tt" disabled onclick="showTikTok()"> Publicar en TikTok</button><button class="action-btn btn-ed" id="btn-ed" disabled onclick="editVideo()"> Editar</button></div></div></div><div id="page-editor" class="page fade-in"><div class="page-header" style="display:flex;align-items:center;gap:1rem;"><button onclick="showPage('create',document.querySelector('.nav-item'))" style="padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.4rem;flex-shrink:0;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">← Volver</button><div><div class="page-title">✂️ Editor Avanzado</div><div class="page-sub">Timeline profesional con IA integrada</div></div></div><div class="editor-layout"><div class="editor-toolbar"><button class="tool-btn" onclick="showPage('create',document.querySelector('.nav-item'))" style="background:rgba(108,92,231,.15);border-color:var(--accent);color:var(--accent2);font-weight:700">&#8592; Volver</button><div class="tool-sep"></div><button class="tool-btn active" onclick="setTool(this,'select')">��️ Seleccionar</button><button class="tool-btn" onclick="setTool(this,'cut')">✂️ Cortar</button><button class="tool-btn" onclick="setTool(this,'text')">T Texto</button><button class="tool-btn" onclick="setTool(this,'zoom')">🔍 Zoom</button><div class="tool-sep"></div><button class="tool-btn" onclick="addCaption()">💬 Caption</button><button class="tool-btn" onclick="addEffect('fade')">🌅 Fade</button><button class="tool-btn" onclick="addEffect('zoom')">🎯 Zoom Dramatico</button><button class="tool-btn" onclick="addEffect('shake')">📳 Shake</button><div class="tool-sep"></div><button class="tool-btn" style="background:rgba(108,92,231,.2);border-color:var(--accent);color:var(--accent2)" onclick="applyAIEdit()">IA: Editar con texto</button><div class="tool-sep"></div><button class="tool-btn" onclick="exportVideo()" style="background:linear-gradient(135deg,var(--accent),#8e7cf3);color:#fff;border:none">💾 Exportar MP4</button></div><div class="editor-main"><div class="editor-preview"><div class="preview-header"><span class="preview-header-title">Vista Previa 9:16</span><span style="font-size:.75rem;color:var(--text2)" id="editor-status">Sin video cargado</span></div><div class="preview-canvas-wrap"><video id="editor-video" style="max-height:380px;border-radius:8px;background:#111" controls></video></div><div class="preview-controls"><button class="play-btn" onclick="togglePlay()" id="play-btn">/button><span class="time-display" id="time-display">0:00 / 0:00</span><div class="progress-track" onclick="seekVideo(event)"><div class="progress-thumb" id="progress-thumb" style="width:0%"></div></div><span style="font-size:.75rem;color:var(--text2)" id="vol-label">Vol: 100%</span></div></div><div class="editor-sidebar"><div class="sidebar-card"><div class="sidebar-card-title">🤖 Edicion con IA</div><textarea class="ai-prompt-input" id="ai-prompt" placeholder="Ej: hazlo mas emocional, agrega zoom dramatico, pon subtitulos estilo viral..."></textarea><div class="prompt-suggestions"><span class="prompt-chip" onclick="setPrompt(this)">Mas emocional</span><span class="prompt-chip" onclick="setPrompt(this)">Zoom dramatico</span><span class="prompt-chip" onclick="setPrompt(this)">Subtitulos virales</span><span class="prompt-chip" onclick="setPrompt(this)">Cortes rapidos</span><span class="prompt-chip" onclick="setPrompt(this)">Musica energetica</span><span class="prompt-chip" onclick="setPrompt(this)">Hook impactante</span></div><button class="btn-primary" style="margin-top:.75rem;padding:.65rem" onclick="applyAIEdit()">🤖 Aplicar con IA</button></div><div class="sidebar-card"><div class="sidebar-card-title">🔥 Templates Virales</div><div class="template-grid"><div class="template-card" onclick="applyTemplate('motivacional')"><div class="template-icon"></div><div class="template-name">Motivacional</div></div><div class="template-card" onclick="applyTemplate('viral')"><div class="template-icon"></div><div class="template-name">Viral Hook</div></div><div class="template-card" onclick="applyTemplate('educativo')"><div class="template-icon"></div><div class="template-name">Educativo</div></div><div class="template-card" onclick="applyTemplate('drama')"><div class="template-icon"></div><div class="template-name">Drama</div></div><div class="template-card" onclick="applyTemplate('dinero')"><div class="template-icon"></div><div class="template-name">Dinero</div></div><div class="template-card" onclick="applyTemplate('lifestyle')"><div class="template-icon">/div><div class="template-name">Lifestyle</div></div></div></div><div class="sidebar-card"><div class="sidebar-card-title">💬 Auto Captions</div><div class="caption-list" id="caption-list"><div style="color:var(--text3);font-size:.8rem">Genera un video primero para ver los captions</div></div><button class="btn-secondary" style="width:100%;margin-top:.5rem" onclick="regenerateCaptions()">🔄 Regenerar Captions</button></div></div></div><div class="timeline-section"><div class="timeline-header"><div class="timeline-title">Timeline</div><div class="timeline-zoom"><button class="tool-btn" onclick="zoomTimeline(-1)" style="padding:.2rem .5rem">-</button><span id="zoom-level">1x</span><button class="tool-btn" onclick="zoomTimeline(1)" style="padding:.2rem .5rem">+</button></div></div><div class="timeline-tracks" id="timeline-tracks"><div class="track-row"><div class="track-label">🎬 Video</div><div class="track-area" id="track-video"><div style="color:var(--text3);font-size:.72rem;padding:.5rem">Sin clips</div></div></div><div class="track-row"><div class="track-label">🎙️ Voz</div><div class="track-area" id="track-audio"></div></div><div class="track-row"><div class="track-label">🎵 Musica</div><div class="track-area" id="track-music"></div></div><div class="track-row"><div class="track-label">T Texto</div><div class="track-area" id="track-text"></div></div></div></div></div></div>
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🎬</div>
+      <div class="auth-logo-text">TikTok AI Studio</div>
+      <div style="color:var(--text2);font-size:.82rem;margin-top:.4rem">Genera videos virales con IA</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="authTab(0)">Iniciar Sesion</button>
+      <button class="auth-tab" onclick="authTab(1)">Registrarse</button>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div id="tab-login">
+      <input class="auth-input" id="login-email" type="email" placeholder="Email" />
+      <input class="auth-input" id="login-password" type="password" placeholder="Contrasena" />
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Iniciar Sesion</button>
+    </div>
+    <div id="tab-register" class="auth-form" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="auth-input-group">
+          <label class="auth-label">Nombre</label>
+          <input class="auth-input" type="text" id="reg-name" placeholder="Juan"/>
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">Apellido</label>
+          <input class="auth-input" type="text" id="reg-apellido" placeholder="Perez"/>
+        </div>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">Edad</label>
+        <input class="auth-input" type="number" id="reg-edad" placeholder="25" min="13" max="120"/>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" type="email" id="reg-email" placeholder="tu@email.com"/>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">Contrasena</label>
+        <input class="auth-input" type="password" id="reg-password" placeholder="Min. 6 caracteres"/>
+      </div>
+      <button class="auth-btn" id="reg-btn" onclick="doRegister()">Crear Cuenta Gratis</button>
+    </div>
+  </div>
+</div><div id="auth-overlay" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f0f0f,#1a1a2e,#2d1b69);z-index:9999;display:flex;align-items:center;justify-content:center"><div style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.6)"><div style="text-align:center;margin-bottom:1.5rem"><div style="font-size:2.5rem">🎬</div><div style="font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,#a29bfe,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">TikTok AI Studio</div><div style="font-size:.82rem;color:#aaa;margin-top:.25rem">Genera videos virales con inteligencia artificial</div></div><div style="display:flex;gap:.5rem;margin-bottom:1.5rem;background:#242424;border-radius:10px;padding:.3rem"><button id="btn-tab-login" onclick="authTab(0)" style="flex:1;padding:.6rem;border-radius:8px;border:none;background:#6c5ce7;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Iniciar Sesion</button><button id="btn-tab-reg" onclick="authTab(1)" style="flex:1;padding:.6rem;border-radius:8px;border:none;background:transparent;color:#aaa;font-size:.88rem;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Registrarse</button></div><div id="auth-msg" style="display:none;background:rgba(233,69,96,.1);border:1px solid rgba(233,69,96,.3);border-radius:8px;padding:.75rem;font-size:.82rem;color:#ff8fa3;margin-bottom:1rem"></div><div id="form-login"><div style="margin-bottom:1rem"><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Email</label><input id="li-email" type="email" placeholder="tu@email.com" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div><div style="margin-bottom:1.5rem"><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Contrasena</label><input id="li-pass" type="password" placeholder="••••••••" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div><button onclick="doLogin()" style="width:100%;padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,#6c5ce7,#8e7cf3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Entrar</button></div><div id="form-reg" style="display:none"><div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem"><div><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Nombre</label><input id="ri-name" type="text" placeholder="Juan" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div><div><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Apellido</label><input id="ri-apellido" type="text" placeholder="Perez" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div></div><div style="margin-bottom:1rem"><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Edad</label><input id="ri-edad" type="number" placeholder="25" min="13" max="120" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div><div style="margin-bottom:1rem"><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Email</label><input id="ri-email" type="email" placeholder="tu@email.com" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div><div style="margin-bottom:1.5rem"><label style="display:block;font-size:.75rem;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">Contrasena</label><input id="ri-pass" type="password" placeholder="Min. 6 caracteres" style="width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#242424;color:#fff;font-size:.9rem;font-family:Inter,sans-serif;box-sizing:border-box"></div><button onclick="doRegister()" style="width:100%;padding:1rem;border-radius:12px;border:none;background:linear-gradient(135deg,#6c5ce7,#8e7cf3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Crear Cuenta Gratis</button></div></div></div></div></div>
+<div class="modal" id="tt-modal"><div class="modal-box"><div class="modal-icon"></div><div class="modal-title">📱 Publicar en TikTok</div><div class="modal-sub">Automatizando la subida a tu cuenta de TikTok...</div><div class="modal-steps"><div class="modal-step" id="ms1"><div class="dot active"></div>🔗 Conectando con TikTok...</div><div class="modal-step" id="ms2"><div class="dot"></div>⬆️ Subiendo video...</div><div class="modal-step" id="ms3"><div class="dot"></div>🏷️ Agregando descripcion y hashtags...</div><div class="modal-step" id="ms4"><div class="dot"></div>✅ Esperando confirmacion manual...</div></div><button class="modal-close" onclick="closeTikTok()">Cerrar</button></div></div><script>const API="http://localhost:8000";;let poll=null,currentVideoUrl=null,videoHistory=[];function showPage(id,el){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  const pg = document.getElementById("page-"+id);
+  if (!pg) { console.error("Pagina no encontrada: page-"+id); return; }
+  pg.classList.add("active");
+  if (el) el.classList.add("active");
+  if (id==="videos") renderVideos();
+  if (id==="dashboard") renderDashboard();
+}function generateViral(){const topics=["5 habitos que cambiaran tu vida","Como ganar dinero desde casa en 2025","El secreto que los ricos no quieren que sepas","3 errores que te impiden ser exitoso","La rutina matutina que lo cambia todo"];document.getElementById("topic").value=topics[Math.floor(Math.random()*topics.length)];document.getElementById("style").value="motivacional";document.getElementById("add_music").checked=true;generateVideo();}async function generateVideo(){const topic=document.getElementById("topic").value.trim();if(!topic){alert("Ingresa un tema para el video");return;}const btn=document.getElementById("gen-btn");btn.disabled=true;btn.textContent="Generando...";document.getElementById("progress-card").style.display="block";document.getElementById("errmsg").innerHTML="";document.getElementById("spin").style.display="inline-block";resetSteps();setProgress(5,"Conectando con el servidor...");try{const res=await fetch(API+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,duration:parseInt(document.getElementById("duration").value),language:document.getElementById("language").value,style:document.getElementById("style").value,audience:document.getElementById("audience").value,voice:document.getElementById("voice").value,
+      niche:document.getElementById("niche")?document.getElementById("niche").value:"general",add_music:document.getElementById("add_music").checked,add_subtitles:document.getElementById("add_subtitles").checked})});const{job_id}=await res.json();pollStatus(job_id,topic);}catch(e){showError("No se pudo conectar al servidor en http://localhost:8000. Asegurate de que el backend esta corriendo.");resetBtn();}}function pollStatus(jobId,topic){poll=setInterval(async()=>{try{const data=await(await fetch(API+"/api/status/"+jobId)).json();setProgress(data.progress||0,data.message||"");updateSteps(data.progress||0);if(data.status==="completed"){clearInterval(poll);showResult(data.video_url,topic);resetBtn();}else if(data.status==="error"){clearInterval(poll);showError(data.message);resetBtn();}}catch(e){clearInterval(poll);showError("Error consultando estado.");resetBtn();}},2000);}function updateSteps(p){
+  // Actualizar mensaje de estado segun progreso
+  var msgs = {10:"Generando guion con IA...",30:"Sintetizando voz...",50:"Descargando imagenes...",70:"Agregando musica...",85:"Ensamblando video final..."};
+  Object.keys(msgs).forEach(function(k){if(p>=parseInt(k))document.getElementById("smsg").textContent=msgs[k];});const map=[[10,"s1"],[25,"s2"],[45,"s3"],[60,"s4"],[75,"s5"]];map.forEach(([threshold,id])=>{const el=document.getElementById(id);if(p>=threshold+15)el.className="step-item done";else if(p>=threshold)el.className="step-item active";else el.className="step-item";});}function resetSteps(){for(let i=1;i<=5;i++)document.getElementById("s"+i).className="step-item";}function setProgress(pct,msg){document.getElementById("pfill").style.width=pct+"%";document.getElementById("ppct").textContent=pct+"%";document.getElementById("smsg").textContent=msg;}function showResult(url,topic){currentVideoUrl=API+url;const player=document.getElementById("vplayer");const ph=document.getElementById("vph");player.src=currentVideoUrl;player.style.display="block";ph.style.display="none";document.getElementById("btn-dl").disabled=false;document.getElementById("btn-tt").disabled=false;document.getElementById("btn-ed").disabled=false;setProgress(100,"Video listo!");document.getElementById("spin").style.display="none";videoHistory.unshift({url:currentVideoUrl,topic:topic||"Video",date:new Date().toLocaleDateString()});document.getElementById("stat-total").textContent=videoHistory.length;}function showError(msg){document.getElementById("errmsg").innerHTML=`<div class="error-box"> ${msg}</div>`;document.getElementById("spin").style.display="none";}function resetBtn(){const btn=document.getElementById("gen-btn");btn.disabled=false;btn.textContent="Generar Video con IA";}function downloadVideo(){if(currentVideoUrl){const a=document.createElement("a");a.href=currentVideoUrl;a.download="tiktok-video.mp4";a.click();}}function showTikTok(){document.getElementById("tt-modal").classList.add("show");let step=1;const interval=setInterval(()=>{if(step>4){clearInterval(interval);return;}const dots=document.querySelectorAll(".dot");dots.forEach((d,i)=>{if(i<step)d.className="dot done";else if(i===step)d.className="dot active";else d.className="dot";});step++;},2000);}function closeTikTok(){document.getElementById("tt-modal").classList.remove("show");}function editVideo(){openEditor()}function renderVideos(){const grid=document.getElementById("videos-grid");if(videoHistory.length===0){grid.innerHTML=`<div style="color:var(--text3);font-size:.85rem;padding:1rem 0">No hay videos aun. Crea tu primer video!</div>`;return;}grid.innerHTML=videoHistory.map((v,i)=>`<div class="video-card" onclick="playVideo(${i})"><div class="vc-thumb"></div><div class="vc-info"><div class="vc-title">${v.topic}</div><div class="vc-meta">${v.date}</div></div></div>`).join("");}function playVideo(i){const v=videoHistory[i];const player=document.getElementById("vplayer");const ph=document.getElementById("vph");player.src=v.url;player.style.display="block";ph.style.display="none";currentVideoUrl=v.url;document.getElementById("btn-dl").disabled=false;document.getElementById("btn-tt").disabled=false;document.getElementById("btn-ed").disabled=false;showPage("create",document.querySelector(".nav-item"));}function renderDashboard(){const list=document.getElementById("recent-list");if(videoHistory.length===0){list.innerHTML=`<div style="color:var(--text3);font-size:.85rem;padding:1rem 0">No hay videos aun. Crea tu primer video!</div>`;return;}list.innerHTML=videoHistory.slice(0,5).map(v=>`<div class="list-item"><div class="li-thumb"></div><div class="li-info"><div class="li-title">${v.topic}</div><div class="li-meta">${v.date}</div></div><span class="li-status s-done">Listo</span></div>`).join("");}document.getElementById("tt-modal").addEventListener("click",function(e){if(e.target===this)closeTikTok();});
+// ===== EDITOR AVANZADO =====
+let editorTimeline = { video:[], audio:[], music:[], text:[] };
+let timelineZoom = 1;
+let currentTool = "select";
+
+function openEditor() {
+  const navItems = document.querySelectorAll(".nav-item");
+  let editorNav = null;
+  navItems.forEach(n => { if(n.textContent.includes("Editor")) editorNav = n; });
+  showPage("editor", editorNav);
+  const ev = document.getElementById("editor-video");
+  if (currentVideoUrl) {
+    ev.src = currentVideoUrl;
+    document.getElementById("editor-status").textContent = "Video cargado";
+    ev.onloadedmetadata = () => {
+      document.getElementById("time-display").textContent = "0:00 / " + formatTime(ev.duration);
+      buildTimeline(ev.duration);
+      buildCaptions();
+    };
+    ev.ontimeupdate = updateProgress;
+  } else {
+    document.getElementById("editor-status").textContent = "Sin video - genera uno primero";
+    buildTimeline(30);
+  }
+}
+
+function buildTimeline(duration) {
+  const trackVideo = document.getElementById("track-video");
+  const trackAudio = document.getElementById("track-audio");
+  const trackMusic = document.getElementById("track-music");
+  trackVideo.innerHTML = "";
+  trackAudio.innerHTML = "";
+  trackMusic.innerHTML = "";
+  // Clips de video (divididos en segmentos)
+  const clips = Math.max(3, Math.floor(duration / 5));
+  const clipW = 100 / clips;
+  for (let i = 0; i < clips; i++) {
+    const clip = document.createElement("div");
+    clip.className = "track-clip video-clip";
+    clip.style.left = (i * clipW) + "%";
+    clip.style.width = (clipW - 0.5) + "%";
+    clip.textContent = "Clip " + (i+1);
+    clip.draggable = true;
+    trackVideo.appendChild(clip);
+  }
+  // Audio narraci�n
+  const audioClip = document.createElement("div");
+  audioClip.className = "track-clip audio-clip";
+  audioClip.style.left = "0%";
+  audioClip.style.width = "100%";
+  audioClip.textContent = "Narracion";
+  trackAudio.appendChild(audioClip);
+  // M�sica
+  const musicClip = document.createElement("div");
+  musicClip.className = "track-clip music-clip";
+  musicClip.style.left = "0%";
+  musicClip.style.width = "100%";
+  musicClip.textContent = "Musica de fondo";
+  trackMusic.appendChild(musicClip);
+}
+
+function buildCaptions() {
+  const list = document.getElementById("caption-list");
+  const video = document.getElementById("editor-video");
+  const duration = video.duration || 30;
+  const captions = [];
+  const times = [0, Math.floor(duration*0.2), Math.floor(duration*0.4), Math.floor(duration*0.6), Math.floor(duration*0.8)];
+  const texts = ["Gancho inicial impactante", "Desarrollo del contenido", "Punto clave del video", "Mensaje reflexivo", "Llamada a la accion"];
+  times.forEach((t, i) => {
+    if (t < duration) captions.push({ start: t, end: Math.min(t+5, duration), text: texts[i] });
+  });
+  list.innerHTML = captions.map(cap =>
+    `<div class="caption-item">
+      <span class="caption-time">${formatTime(cap.start)}</span>
+      <span class="caption-text" contenteditable="true">${cap.text}</span>
+      <span class="caption-edit" onclick="this.parentElement.remove()">x</span>
+    </div>`
+  ).join("");
+  // Agregar clips de texto al timeline
+  const trackText = document.getElementById("track-text");
+  trackText.innerHTML = "";
+  captions.forEach(cap => {
+    const clip = document.createElement("div");
+    clip.className = "track-clip text-clip";
+    clip.style.left = (cap.start / duration * 100) + "%";
+    clip.style.width = ((cap.end - cap.start) / duration * 100) + "%";
+    clip.textContent = cap.text.substring(0, 12) + "...";
+    trackText.appendChild(clip);
+  });
+}
+
+function togglePlay() {
+  const v = document.getElementById("editor-video");
+  const btn = document.getElementById("play-btn");
+  if (v.paused) { v.play(); btn.textContent = "?"; }
+  else { v.pause(); btn.textContent = "?"; }
+}
+
+function updateProgress() {
+  const v = document.getElementById("editor-video");
+  if (!v.duration) return;
+  const pct = (v.currentTime / v.duration) * 100;
+  document.getElementById("progress-thumb").style.width = pct + "%";
+  document.getElementById("time-display").textContent = formatTime(v.currentTime) + " / " + formatTime(v.duration);
+}
+
+function seekVideo(e) {
+  const v = document.getElementById("editor-video");
+  const track = e.currentTarget;
+  const pct = e.offsetX / track.offsetWidth;
+  v.currentTime = pct * v.duration;
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+function setTool(btn, tool) {
+  document.querySelectorAll(".tool-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentTool = tool;
+}
+
+function addCaption() {
+  const list = document.getElementById("caption-list");
+  const item = document.createElement("div");
+  item.className = "caption-item";
+  item.innerHTML = `<span class="caption-time">0:00</span><span class="caption-text" contenteditable="true">Nuevo caption</span><span class="caption-edit" onclick="this.parentElement.remove()">x</span>`;
+  list.appendChild(item);
+}
+
+function addEffect(effect) {
+  const effects = { fade:"Fade In/Out aplicado", zoom:"Zoom Dramatico aplicado", shake:"Shake Effect aplicado" };
+  showToast(effects[effect] || "Efecto aplicado");
+}
+
+function setPrompt(chip) {
+  document.getElementById("ai-prompt").value = chip.textContent;
+}
+
+async function applyAIEdit() {
+  const prompt = document.getElementById("ai-prompt").value.trim();
+  if (!prompt) { alert("Escribe una instruccion para la IA"); return; }
+  showToast("IA procesando: " + prompt + "...");
+  // Simular procesamiento IA
+  await new Promise(r => setTimeout(r, 1500));
+  const responses = {
+    "mas emocional": "Musica intensificada + zoom en momentos clave",
+    "zoom dramatico": "Zoom dinamico aplicado en transiciones",
+    "subtitulos virales": "Captions estilo reels generados",
+    "cortes rapidos": "Ritmo de cortes acelerado",
+    "musica energetica": "Track energetico seleccionado",
+    "hook impactante": "Gancho inicial optimizado para retension"
+  };
+  const key = Object.keys(responses).find(k => prompt.toLowerCase().includes(k));
+  showToast(key ? responses[key] : "Edicion aplicada con IA");
+}
+
+function applyTemplate(type) {
+  const templates = {
+    motivacional: { msg:"Template Motivacional aplicado: zoom + musica epica + captions bold", color:"var(--accent)" },
+    viral:        { msg:"Template Viral Hook: gancho 3s + cortes rapidos + CTA final", color:"var(--red)" },
+    educativo:    { msg:"Template Educativo: intro + 3 puntos + conclusion", color:"var(--green)" },
+    drama:        { msg:"Template Drama: musica tensa + pausa dramatica + revelacion", color:"#fd79a8" },
+    dinero:       { msg:"Template Dinero: hook impactante + prueba social + CTA", color:"#fdcb6e" },
+    lifestyle:    { msg:"Template Lifestyle: estetica premium + musica chill + branding", color:"var(--accent2)" }
+  };
+  const t = templates[type];
+  if (t) showToast(t.msg);
+}
+
+function regenerateCaptions() {
+  buildCaptions();
+  showToast("Captions regenerados con IA");
+}
+
+function zoomTimeline(dir) {
+  timelineZoom = Math.max(0.5, Math.min(4, timelineZoom + dir * 0.5));
+  document.getElementById("zoom-level").textContent = timelineZoom + "x";
+  const tracks = document.querySelectorAll(".track-area");
+  tracks.forEach(t => t.style.minWidth = (timelineZoom * 100) + "%");
+}
+
+function exportVideo() {
+  if (!currentVideoUrl) { alert("No hay video para exportar"); return; }
+  const a = document.createElement("a");
+  a.href = currentVideoUrl;
+  a.download = "tiktok-video-editado.mp4";
+  a.click();
+  showToast("Exportando video en alta calidad...");
+}
+
+function showToast(msg) {
+  let toast = document.getElementById("toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast";
+    toast.style.cssText = "position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);color:var(--text);padding:.75rem 1.5rem;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;transition:opacity .3s;box-shadow:0 8px 24px rgba(0,0,0,.4)";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = "1";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.style.opacity = "0", 3000);
+}
+
+
+
+// ===== AUTH =====
+function authTab(n) {
+  document.getElementById('form-login').style.display = n === 0 ? 'block' : 'none';
+  document.getElementById('form-reg').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('btn-tab-login').style.background = n === 0 ? '#6c5ce7' : 'transparent';
+  document.getElementById('btn-tab-login').style.color = n === 0 ? '#fff' : '#aaa';
+  document.getElementById('btn-tab-reg').style.background = n === 1 ? '#6c5ce7' : 'transparent';
+  document.getElementById('btn-tab-reg').style.color = n === 1 ? '#fff' : '#aaa';
+  document.getElementById('auth-msg').style.display = 'none';
+}
+
+function authMsg(msg, ok) {
+  var el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = ok ? 'rgba(0,184,148,.1)' : 'rgba(233,69,96,.1)';
+  el.style.borderColor = ok ? 'rgba(0,184,148,.3)' : 'rgba(233,69,96,.3)';
+  el.style.color = ok ? '#00b894' : '#ff8fa3';
+}
+
+async function doLogin() {
+  var email = document.getElementById('li-email').value.trim();
+  var pass = document.getElementById('li-pass').value;
+  if (!email || !pass) { authMsg('Completa todos los campos'); return; }
+  var btn = document.getElementById('btn-login-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
+  try {
+    var r = await fetch(API + '/api/auth/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email: email, password: pass})
+    });
+    var d = await r.json();
+    if (!r.ok) { authMsg(d.detail || 'Email o contrasena incorrectos'); return; }
+    localStorage.setItem('auth_token', d.token);
+    localStorage.setItem('auth_user', JSON.stringify(d.user));
+    loadUserSession(d.user);
+    document.getElementById('auth-overlay').style.display = 'none';
+  } catch(e) { authMsg('No se pudo conectar al servidor'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; } }
+}
+
+async function doRegister() {
+  var name = document.getElementById('ri-name').value.trim();
+  var apellido = document.getElementById('ri-apellido').value.trim();
+  var edad = parseInt(document.getElementById('ri-edad').value) || 0;
+  var email = document.getElementById('ri-email').value.trim();
+  var pass = document.getElementById('ri-pass').value;
+  if (!name || !apellido || !edad || !email || !pass) { authMsg('Completa todos los campos'); return; }
+  if (edad < 13) { authMsg('Debes tener al menos 13 anos'); return; }
+  if (pass.length < 6) { authMsg('La contrasena debe tener al menos 6 caracteres'); return; }
+  var btn = document.getElementById('btn-reg-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creando cuenta...'; }
+  try {
+    var r = await fetch(API + '/api/auth/register', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name: name, apellido: apellido, edad: edad, email: email, password: pass})
+    });
+    var d = await r.json();
+    if (!r.ok) { authMsg(d.detail || 'Error al registrarse'); return; }
+    localStorage.setItem('auth_token', d.token);
+    localStorage.setItem('auth_user', JSON.stringify(d.user));
+    loadUserSession(d.user);
+    document.getElementById('auth-overlay').style.display = 'none';
+  } catch(e) { authMsg('No se pudo conectar al servidor'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Crear Cuenta Gratis'; } }
+}
+
+function checkAuth() {
+  var token = localStorage.getItem('auth_token');
+  var user = localStorage.getItem('auth_user');
+  if (token && user) {
+    try { loadUserSession(JSON.parse(user)); document.getElementById('auth-overlay').style.display = 'none'; } catch(e) {}
+  }
+}
+
+function logout() {
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('auth_user');
+  document.getElementById('auth-overlay').style.display = 'flex';
+}
+
+checkAuth();
+
+// Cargar temas tendencia
+async function loadTrending() {
+  try {
+    var r = await fetch(API + '/api/trending');
+    var d = await r.json();
+    var list = document.getElementById('trending-list');
+    if (!list) return;
+    if (d.trending && d.trending.length > 0) {
+      list.innerHTML = d.trending.map(t =>
+        '<span onclick="document.getElementById(\'topic\').value=\'' + t.topic + '\';showPage(\'create\',document.querySelector(\'.nav-item\'))" style="padding:.3rem .75rem;background:rgba(108,92,231,.15);border:1px solid var(--accent);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--accent2)">' +
+        t.topic.substring(0,25) + ' (' + t.count + ')</span>'
+      ).join('');
+    } else {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.82rem">Genera tu primer video para ver tendencias</div>';
+    }
+  } catch(e) {}
+}
+
+// Cargar trending al abrir dashboard
+var _origShowPage = showPage;
+showPage = function(id, el) {
+  _origShowPage(id, el);
+  if (id === 'dashboard') loadTrending();
+};</script></body></html>
+
+
+

@@ -1,0 +1,17 @@
+# Entornos
+.env
+frontend/.env
+*.db
+
+# Outputs generados
+outputs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# Node
+node_modules/
+frontend/dist/
