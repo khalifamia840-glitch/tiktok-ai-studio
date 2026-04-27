@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "TikTok AI Studio",
+    "slug": "tiktok-ai-studio",
+    "version": "1.0.0",
+    "scheme": "tiktok-ai-studio",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#010101"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#010101"
+      },
+      "package": "com.tiktokai.studio",
+      "versionCode": 1,
+      "kotlinVersion": "2.1.0",
+      "permissions": [
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.tiktokai.studio",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Necesitamos acceso para guardar videos generados.",
+        "NSPhotoLibraryAddUsageDescription": "Necesitamos acceso para guardar videos generados.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e05689c0-c67a-4065-8159-c1d624f2d09b"
+      }
+    },
+    "owner": "khalifamia840-fallo"
+  }
+}
