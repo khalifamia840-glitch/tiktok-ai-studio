@@ -1,0 +1,16 @@
+frontend
+mobile
+.git
+.gitignore
+node_modules
+backend/__pycache__
+backend/*.db
+backend/outputs
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+.env
+.env.*
+.vscode
+.DS_Store

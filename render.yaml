@@ -2,28 +2,42 @@ services:
   - type: web
     name: tiktok-ai-studio
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: Dockerfile
     rootDir: .
     plan: free
     envVars:
       - key: GROQ_API_KEY
+        value: ""
         sync: false
       - key: OPENAI_API_KEY
+        value: ""
         sync: false
       - key: PEXELS_API_KEY
+        value: ""
+        sync: false
+      - key: PIXABAY_API_KEY
+        value: ""
         sync: false
       - key: ELEVENLABS_API_KEY
+        value: ""
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        value: "21m00Tcm4TlvDq8ikWAM"
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
-        value: dsscilww3
+        value: ""
+        sync: false
       - key: CLOUDINARY_API_KEY
-        value: "128514469889199"
+        value: ""
+        sync: false
       - key: CLOUDINARY_API_SECRET
+        value: ""
         sync: false
       - key: HF_TOKEN
+        value: ""
         sync: false
       - key: IMAGE_PROVIDER
-        value: dalle
+        value: "dalle"
       - key: SECRET_KEY
         generateValue: true
       - key: PORT
