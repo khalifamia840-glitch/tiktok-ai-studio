@@ -45,8 +45,8 @@ class ImageProviderConfig:
 @dataclass
 class VideoSpec:
     """Constants that define the output video format."""
-    width: int = 1080
-    height: int = 1920
+    width: int = 540
+    height: int = 960
     fps: int = 24
     video_codec: str = "libx264"
     audio_codec: str = "aac"

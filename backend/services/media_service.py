@@ -9,7 +9,7 @@ import config
 # Cache en memoria
 _image_cache: dict = {}
 
-TIKTOK_W, TIKTOK_H = 1080, 1920  # Resolucion Full HD vertical TikTok
+TIKTOK_W, TIKTOK_H = 540, 960  # Resolucion reducida para plan gratuito de Render
 
 
 async def fetch_media(keywords: list, duration: int, job_id: str) -> list:
