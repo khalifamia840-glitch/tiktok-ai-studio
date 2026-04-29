@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink } from 'react-router-dom'
-import { Video, Library, Settings } from 'lucide-react'
+import { Video, Library } from 'lucide-react'
 import GeneratePage from './pages/GeneratePage'
 import LibraryPage from './pages/LibraryPage'
 
@@ -28,17 +28,15 @@ export default function App() {
 
       {/* Bottom nav - estilo mobile (funciona en iOS y Android) */}
       <nav className="border-t border-gray-800 flex">
-        <NavLink to="/" end className={({isActive}) =>
-          `flex-1 flex flex-col items-center py-3 gap-1 text-xs transition-colors ${
-            isActive ? 'text-[#fe2c55]' : 'text-gray-500 hover:text-gray-300'
+        <NavLink to="/" end className={({ isActive }) =>
+          `flex-1 flex flex-col items-center py-3 gap-1 text-xs transition-colors ${isActive ? 'text-[#fe2c55]' : 'text-gray-500 hover:text-gray-300'
           }`
         }>
           <Video size={20} />
           <span>Crear</span>
         </NavLink>
-        <NavLink to="/library" className={({isActive}) =>
-          `flex-1 flex flex-col items-center py-3 gap-1 text-xs transition-colors ${
-            isActive ? 'text-[#fe2c55]' : 'text-gray-500 hover:text-gray-300'
+        <NavLink to="/library" className={({ isActive }) =>
+          `flex-1 flex flex-col items-center py-3 gap-1 text-xs transition-colors ${isActive ? 'text-[#fe2c55]' : 'text-gray-500 hover:text-gray-300'
           }`
         }>
           <Library size={20} />
