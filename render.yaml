@@ -1,0 +1,37 @@
+services:
+  # --- BACKEND (Web Service) ---
+  - type: web
+    name: tiktok-ai-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    rootDir: .
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PEXELS_API_KEY
+        sync: false
+      - key: PIXABAY_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PORT
+        value: "8000"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # --- FRONTEND (Static Site) ---
+  - type: static
+    name: tiktok-ai-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: tiktok-ai-backend
+          property: host

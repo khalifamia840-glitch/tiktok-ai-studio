@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #fe2c55;
+    --secondary: #25f4ee;
+    --bg-dark: #010101;
+    --surface: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.1);
+  }
+
+  body {
+    background: radial-gradient(circle at top right, #1a1a2e, #010101);
+    color: #ffffff;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-heading {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Scrollbar Premium */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #010101; }
+::-webkit-scrollbar-thumb { 
+  background: linear-gradient(to bottom, #fe2c55, #25f4ee); 
+  border-radius: 10px;
+  border: 2px solid #010101;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  @apply glass rounded-3xl p-6 transition-all duration-300;
+}
+
+.glass-card:hover {
+  border-color: rgba(254, 44, 85, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Gradientes */
+.tiktok-gradient-text {
+  @apply bg-gradient-to-r from-[#fe2c55] via-[#ff6b6b] to-[#25f4ee] bg-clip-text text-transparent;
+}
+
+.btn-premium {
+  @apply relative overflow-hidden bg-gradient-to-r from-[#fe2c55] to-[#ff4b2b]
+         text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300
+         hover:shadow-[0_0_20px_rgba(254,44,85,0.4)] hover:-translate-y-0.5
+         active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
+         flex items-center justify-center gap-3;
+}
+
+/* Animaciones */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+/* Inputs Premium */
+.input-premium {
+  @apply w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4
+         text-white placeholder-gray-500 focus:outline-none focus:ring-2 
+         focus:ring-[#fe2c55]/50 focus:border-[#fe2c55] transition-all;
+}
+
+/* Sidebar Custom Scroll */
+.sidebar-scroll {
+  scrollbar-width: none;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  display: none;
+}
