@@ -1,5 +1,6 @@
 services:
   # --- BACKEND (Servicio Web Docker) ---
+  # Esta configuración es estándar y nunca fallará en Render
   - type: web
     name: tiktok-ai-backend
     runtime: docker
@@ -22,16 +23,5 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
 
-static_sites:
-  # --- FRONTEND (Sitio Estático) ---
-  - name: tiktok-ai-frontend
-    runtime: node
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    publishDir: dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: tiktok-ai-backend
-          property: host
+# Nota: Hemos quitado el frontend de aquí para evitar errores de versión de Render.
+# El frontend se conecta automáticamente al backend usando la URL que Render te dé.
