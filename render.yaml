@@ -22,13 +22,13 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
 
+static_sites:
   # --- FRONTEND (Sitio Estático) ---
-  - type: web
-    name: tiktok-ai-frontend
+  - name: tiktok-ai-frontend
     runtime: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishDir: dist
+    publishDir: dist
     envVars:
       - key: VITE_API_URL
         fromService:
