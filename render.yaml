@@ -1,5 +1,5 @@
 services:
-  # --- BACKEND (Web Service) ---
+  # --- BACKEND (Servicio Web Docker) ---
   - type: web
     name: tiktok-ai-backend
     runtime: docker
@@ -22,13 +22,13 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
 
-  # --- FRONTEND (Static Site) ---
-  - type: static
+  # --- FRONTEND (Sitio Estático) ---
+  - type: web
     name: tiktok-ai-frontend
     runtime: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishDir: dist
+    staticPublishDir: dist
     envVars:
       - key: VITE_API_URL
         fromService:
