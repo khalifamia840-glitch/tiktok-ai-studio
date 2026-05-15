@@ -17,6 +17,7 @@ from moviepy.editor import (
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models import VideoSpec
+from image_processor import normalize_batch, validate_image
 
 _SPEC = VideoSpec()
 W = _SPEC.width        # 540
@@ -143,62 +144,53 @@ def _build(
     else:
         durations = [total / n] * n
 
-    # Redimensionar imagenes a la resolucion de salida
-    resized: list[str] = []
-    for p in media_paths:
-        try:
-            if not os.path.exists(p):
-                logger.warning("[Video] Archivo no existe: %s", p)
-                resized.append(p)
-                continue
-            img = Image.open(p).convert("RGB").resize((W, H), Image.LANCZOS)
-            out = p.replace(".jpg", "_sm.jpg")
-            img.save(out, "JPEG", quality=85)
-            resized.append(out)
-        except Exception as exc:
-            logger.warning("[Video] No se pudo redimensionar %s: %s", p, exc)
-            resized.append(p)
+    # ─── NORMALIZACIÓN OBLIGATORIA ───────────────────────────────────────
+    # Convierte TODA imagen (WebP, PNG, RGBA, Progressive JPEG, etc.) a
+    # JPEG baseline RGB válido antes de pasarla a MoviePy/FFmpeg.
+    # Si alguna falla: usa un placeholder cinematográfico.
+    # ─────────────────────────────────────────────────────────────────────
+    logger.info("[Video] Normalizando %d imágenes para job %s...", len(media_paths), job_id)
+    norm_dir = f"outputs/media/{job_id}/normalized"
+    normalized = normalize_batch(media_paths, norm_dir, job_id)
+    logger.info("[Video] %d/%d imágenes normalizadas OK", len(normalized), len(media_paths))
 
-    # Crear clips de imagen
+    # Ajustar durations al número real de imágenes normalizadas
+    n_actual = len(normalized)
+    if n_actual != n:
+        durations = [total / n_actual] * n_actual
+
+    # Crear clips de imagen desde las rutas normalizadas
     clips = []
     import math
-    for i, (p, dur) in enumerate(zip(resized, durations)):
+    for i, (p, dur) in enumerate(zip(normalized, durations)):
         try:
+            logger.info("[Video] Cargando clip %d: %s", i, p)
             clip = ImageClip(p).set_duration(max(0.1, dur))
             if not fast_mode:
                 # Efecto Ken Burns (Zoom in / out)
                 zoom_factor = 1.05
                 if i % 2 == 0:
-                    # Zoom In
                     clip = clip.resize(lambda t: 1 + (zoom_factor - 1) * t / clip.duration)
                 else:
-                    # Zoom Out
                     clip = clip.resize(lambda t: zoom_factor - (zoom_factor - 1) * t / clip.duration)
-                
                 # Crossfade transition
                 if i > 0:
                     clip = clip.crossfadein(0.5)
             clips.append(clip)
+            logger.info("[Video] ✅ Clip %d cargado OK (%s)", i, p)
         except Exception as exc:
-            logger.warning("[Video] No se pudo crear clip para %s: %s", p, exc)
+            logger.error("[Video] ❌ No se pudo crear clip %d para %s: %s", i, p, exc)
 
-    # Fallback de emergencia: si no hay clips, crear imagen negra
+    # Fallback de emergencia: si NADA funcionó, clip negro
     if not clips:
-        logger.error("[Video] No se pudo cargar ninguna imagen para job '%s'. Usando clip de emergencia.", job_id)
-        try:
-            from PIL import Image as PILImage
-            import io as _io
-            import tempfile
-            emergency_img = PILImage.new("RGB", (W, H), (10, 10, 10))
-            emergency_path = f"outputs/media/{job_id}/emergency.jpg"
-            os.makedirs(f"outputs/media/{job_id}", exist_ok=True)
-            emergency_img.save(emergency_path, "JPEG")
-            clips = [ImageClip(emergency_path).set_duration(total)]
-        except Exception as emg_exc:
-            raise RuntimeError(
-                f"No se pudieron cargar las imagenes para el job '{job_id}'. "
-                "Verifica que los archivos de media existan y sean imagenes JPEG validas."
-            ) from emg_exc
+        logger.error("[Video] ❌ EMERGENCIA: ningún clip cargó, usando pantalla negra para job %s", job_id)
+        from image_processor import create_fallback_image
+        emergency_path = f"outputs/media/{job_id}/emergency.jpg"
+        os.makedirs(f"outputs/media/{job_id}", exist_ok=True)
+        create_fallback_image(emergency_path, idx=0)
+        clips = [ImageClip(emergency_path).set_duration(total)]
+
+
 
 
     video = (
