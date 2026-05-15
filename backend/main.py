@@ -44,9 +44,11 @@ class VideoRequest(BaseModel):
     audience: str = "general"
     duration: int = 30          # segundos: 15, 30 o 60
     language: str = "es"        # es | en
-    voice: str = "gtts"         # gtts | edge
+    voice: str = "gtts"         # gtts | edge | elevenlabs
     add_subtitles: bool = True
     niche: str = "general"
+    visual_style: str = "cinematic"  # realistic | cinematic | dark | anime | tiktok_viral | documentary
+    upscaler: str = "pil"            # pil | realesrgan
 
 
 # ===== AUTH ENDPOINTS =====
@@ -259,6 +261,8 @@ async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False)
             audience=req.audience,
             add_subtitles=req.add_subtitles,
             is_premium=is_premium,
+            visual_style=req.visual_style,
+            upscaler=req.upscaler,
         )
 
         if result["success"]:

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Sparkles, Loader2, Download, CheckCircle, AlertCircle, ChevronDown, Wand2, Type, Music, Video as VideoIcon } from 'lucide-react'
+import { Sparkles, Loader2, Download, CheckCircle, AlertCircle, ChevronDown, Wand2, Type, Music, Video as VideoIcon, Clapperboard, Maximize2 } from 'lucide-react'
 import { generateVideo, getJobStatus, getVideoUrl } from '../api'
 import Timeline from '../components/Timeline'
 import RetentionScore from '../components/RetentionScore'
@@ -11,6 +11,16 @@ const DURATIONS = [15, 30, 45, 60]
 const VOICES = [
   { value: 'edge', label: 'Edge TTS (Ultra-Natural)' },
   { value: 'gtts', label: 'Google TTS (Básico)' },
+  { value: 'elevenlabs', label: '⭐ ElevenLabs (Premium)' },
+]
+
+const VISUAL_STYLES = [
+  { value: 'cinematic', emoji: '🎬', label: 'Cinemático', desc: 'Estilo película' },
+  { value: 'dark', emoji: '🌑', label: 'Oscuro', desc: 'Thriller / Terror' },
+  { value: 'realistic', emoji: '📸', label: 'Realista', desc: 'Ultra HD' },
+  { value: 'tiktok_viral', emoji: '✨', label: 'TikTok Viral', desc: 'Alto contraste' },
+  { value: 'anime', emoji: '🎌', label: 'Anime', desc: 'Estilo manga' },
+  { value: 'documentary', emoji: '🎥', label: 'Documental', desc: 'Auténtico' },
 ]
 
 export default function GeneratePage() {
@@ -23,6 +33,9 @@ export default function GeneratePage() {
     voice: 'edge',
     add_subtitles: true,
     niche: 'general',
+    visual_style: 'cinematic',
+    upscaler: 'pil',
+    fast_mode: false,
   })
 
   // Cargar tema desde el state (LandingPage / Dashboard)
@@ -205,6 +218,85 @@ export default function GeneratePage() {
                 className="w-5 h-5 accent-[#fe2c55]"
               />
             </label>
+
+            {/* Visual Style Selector */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <Clapperboard size={14} /> Estilo Visual IA
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {VISUAL_STYLES.map(vs => (
+                  <button
+                    key={vs.value}
+                    type="button"
+                    onClick={() => set('visual_style', vs.value)}
+                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl border transition-all ${
+                      form.visual_style === vs.value
+                        ? 'border-[#fe2c55] bg-[#fe2c55]/10 text-white'
+                        : 'border-white/5 bg-white/5 text-gray-400 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-xl mb-1">{vs.emoji}</span>
+                    <span className="font-bold text-[11px]">{vs.label}</span>
+                    <span className="text-[9px] text-gray-500 mt-0.5">{vs.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Upscaler Selector */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <Maximize2 size={14} /> Resolución & Upscaler
+              </label>
+              <div className="flex bg-black/50 p-1 rounded-xl">
+                <button type="button"
+                  onClick={() => set('upscaler', 'pil')}
+                  className={`flex-1 flex flex-col items-center py-3 rounded-lg transition-all ${
+                    form.upscaler === 'pil' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'
+                  }`}
+                >
+                  <span className="font-bold text-xs">🔷 HD Rápido</span>
+                  <span className="text-[9px] text-gray-500">PIL Lanczos · 1080p</span>
+                </button>
+                <button type="button"
+                  onClick={() => set('upscaler', 'realesrgan')}
+                  className={`flex-1 flex flex-col items-center py-3 rounded-lg transition-all ${
+                    form.upscaler === 'realesrgan' ? 'bg-[#25f4ee]/20 text-[#25f4ee]' : 'text-gray-500 hover:text-white'
+                  }`}
+                >
+                  <span className="font-bold text-xs">⚡ Real-ESRGAN</span>
+                  <span className="text-[9px] text-gray-500">4x Super Res · Lento</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Cinematic vs Fast Mode */}
+            <div className="p-4 bg-gradient-to-r from-white/5 to-transparent rounded-2xl border border-white/5">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-bold text-gray-300 uppercase tracking-widest">Modo de Generación</label>
+              </div>
+              <div className="flex bg-black/50 p-1 rounded-xl">
+                <button type="button"
+                  onClick={() => set('fast_mode', true)}
+                  className={`flex-1 flex flex-col items-center justify-center py-3 rounded-lg transition-all ${
+                    form.fast_mode ? 'bg-[#25f4ee] text-black shadow-lg shadow-[#25f4ee]/20' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <span className="font-bold text-sm">⚡ Fast Mode</span>
+                  <span className={`text-[10px] ${form.fast_mode ? 'text-black/70' : 'text-gray-500'}`}>Cortes simples, rápido</span>
+                </button>
+                <button type="button"
+                  onClick={() => set('fast_mode', false)}
+                  className={`flex-1 flex flex-col items-center justify-center py-3 rounded-lg transition-all ${
+                    !form.fast_mode ? 'bg-[#fe2c55] text-white shadow-lg shadow-[#fe2c55]/20' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <span className="font-bold text-sm">🎥 Cinematic</span>
+                  <span className={`text-[10px] ${!form.fast_mode ? 'text-white/70' : 'text-gray-500'}`}>Zooms, Transiciones, BGM</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {error && (

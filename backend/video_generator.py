@@ -37,6 +37,9 @@ async def generate_video(
     audience: str = "general",
     add_subtitles: bool = True,
     is_premium: bool = False,
+    fast_mode: bool = False,
+    visual_style: str = "cinematic",
+    upscaler: str = "pil",
 ) -> dict[str, Any]:
     """
     Orquesta el pipeline completo de generacion de video TikTok.
@@ -83,42 +86,64 @@ async def generate_video(
             "error_message": str(exc),
         }
 
-    # --- Etapa 2: Generar audio ---
+    # --- Etapa 2 y 3: Generar audio y obtener media EN PARALELO ---
+    import asyncio
     narration: str = script.get("narration", topic)
-    try:
-        audio_path: str = await generate_audio(
-            script=narration,
-            job_id=job_id,
-            language=language,
-            engine=voice,
-        )
-    except Exception as exc:
+    keywords: list[str] = script.get("keywords", [topic])
+    
+    async def get_audio_safe():
+        try:
+            return await generate_audio(
+                script=narration,
+                job_id=job_id,
+                language=language,
+                engine=voice,
+            )
+        except Exception as exc:
+            return exc
+
+    async def get_media_safe():
+        try:
+            return await fetch_media(
+                keywords=keywords,
+                duration=duration,
+                job_id=job_id,
+                fast_mode=fast_mode,
+                visual_style=visual_style,
+                segments=script.get("segments", []),
+                topic=topic,
+                upscaler=upscaler,
+            )
+        except Exception as exc:
+            return exc
+
+    results = await asyncio.gather(get_audio_safe(), get_media_safe())
+    audio_res = results[0]
+    media_res = results[1]
+
+    if isinstance(audio_res, Exception):
         return {
             "success": False,
             "job_id": job_id,
             "output_path": None,
             "script": script,
             "error_stage": "audio",
-            "error_message": str(exc),
+            "error_message": str(audio_res),
         }
+    else:
+        audio_path = audio_res
 
-    # --- Etapa 3: Obtener media ---
-    keywords: list[str] = script.get("keywords", [topic])
-    try:
-        media_paths: list[str] = await fetch_media(
-            keywords=keywords,
-            duration=duration,
-            job_id=job_id,
-        )
-    except Exception as exc:
+    if isinstance(media_res, Exception):
         return {
             "success": False,
             "job_id": job_id,
             "output_path": None,
             "script": script,
             "error_stage": "media",
-            "error_message": str(exc),
+            "error_message": str(media_res),
         }
+    else:
+        media_paths = media_res
 
     # --- Etapa 4: Generar subtitulos (opcional) ---
     subtitles: list = []
@@ -163,6 +188,7 @@ async def generate_video(
             title=title,
             segment_durations=segment_durations if segment_durations else None,
             is_premium=is_premium,
+            fast_mode=fast_mode,
         )
     except Exception as exc:
         return {

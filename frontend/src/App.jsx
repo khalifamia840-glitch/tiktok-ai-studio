@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, useNavigate, useLocation, Navigate } from 'react-router-dom'
-import { Video, Library, LayoutDashboard, Settings, LogOut, Menu, X, Sparkles, Flame } from 'lucide-react'
+import { Video, Library, LayoutDashboard, Settings, LogOut, Menu, X, Sparkles, Flame, LayoutTemplate } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import GeneratePage from './pages/GeneratePage'
 import LibraryPage from './pages/LibraryPage'
@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage'
 import AuthPage from './pages/AuthPage'
 import LandingPage from './pages/LandingPage'
 import TrendsPage from './pages/TrendsPage'
+import TemplatesPage from './pages/TemplatesPage'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 function AuthGuard({ children }) {
@@ -28,6 +29,7 @@ function AppLayout({ children }) {
 
   const navItems = [
     { to: '/generate', icon: Video, label: 'Crear Video' },
+    { to: '/templates', icon: LayoutTemplate, label: 'Plantillas' },
     { to: '/trends', icon: Flame, label: 'Tendencias' },
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/library', icon: Library, label: 'Biblioteca' },
@@ -151,6 +153,7 @@ function AppContent() {
       
       {/* Rutas con Sidebar (algunas públicas, otras protegidas) */}
       <Route path="/generate" element={<AppLayout><GeneratePage /></AppLayout>} />
+      <Route path="/templates" element={<AppLayout><TemplatesPage /></AppLayout>} />
       <Route path="/trends" element={<AppLayout><TrendsPage /></AppLayout>} />
       
       {/* Rutas Privadas */}

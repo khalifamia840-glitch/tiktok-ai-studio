@@ -34,10 +34,11 @@ async def assemble_video(
     title: str,
     segment_durations: list = None,
     is_premium: bool = False,
+    fast_mode: bool = False,
 ) -> str:
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
-        None, _build, job_id, audio_path, media_paths, subtitles, title, segment_durations, is_premium
+        None, _build, job_id, audio_path, media_paths, subtitles, title, segment_durations, is_premium, fast_mode
     )
 
 
@@ -123,6 +124,7 @@ def _build(
     title: str,
     segment_durations: list = None,
     is_premium: bool = False,
+    fast_mode: bool = False,
 ) -> str:
     """
     Ensambla el video final y limpia los archivos temporales.
@@ -155,9 +157,24 @@ def _build(
 
     # Crear clips de imagen
     clips = []
-    for p, dur in zip(resized, durations):
+    import math
+    for i, (p, dur) in enumerate(zip(resized, durations)):
         try:
-            clips.append(ImageClip(p).set_duration(max(0.1, dur)))
+            clip = ImageClip(p).set_duration(max(0.1, dur))
+            if not fast_mode:
+                # Efecto Ken Burns (Zoom in / out)
+                zoom_factor = 1.05
+                if i % 2 == 0:
+                    # Zoom In
+                    clip = clip.resize(lambda t: 1 + (zoom_factor - 1) * t / clip.duration)
+                else:
+                    # Zoom Out
+                    clip = clip.resize(lambda t: zoom_factor - (zoom_factor - 1) * t / clip.duration)
+                
+                # Crossfade transition
+                if i > 0:
+                    clip = clip.crossfadein(0.5)
+            clips.append(clip)
         except Exception as exc:
             logger.warning("[Video] No se pudo crear clip para %s: %s", p, exc)
 
@@ -169,10 +186,34 @@ def _build(
         )
 
     video = (
-        concatenate_videoclips(clips, method="compose")
+        concatenate_videoclips(clips, method="compose" if not fast_mode else "chain")
         .set_duration(total)
-        .set_audio(audio)
     )
+
+    # Añadir música de fondo si no es fast_mode
+    if not fast_mode:
+        from moviepy.editor import CompositeAudioClip
+        import os
+        bgm_path = "assets/bgm.mp3"
+        if os.path.exists(bgm_path):
+            try:
+                bgm = AudioFileClip(bgm_path).volumex(0.15)
+                # Loopear o cortar la música para que coincida con el total
+                if bgm.duration < total:
+                    from moviepy.audio.fx.all import audio_loop
+                    bgm = audio_loop(bgm, duration=total)
+                else:
+                    bgm = bgm.subclip(0, total)
+                
+                final_audio = CompositeAudioClip([audio, bgm])
+                video = video.set_audio(final_audio)
+            except Exception as exc:
+                logger.warning("[Video] Error añadiendo BGM: %s", exc)
+                video = video.set_audio(audio)
+        else:
+            video = video.set_audio(audio)
+    else:
+        video = video.set_audio(audio)
 
     # Subtitulos con PIL (sin ImageMagick)
     layers = [video]

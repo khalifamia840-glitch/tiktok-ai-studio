@@ -25,17 +25,17 @@ def _call_groq(topic, style, audience, duration, language, niche="general"):
     lang_name = "espanol" if language == "es" else "English"
     clips_count = max(4, duration // 5)
 
-    prompt = f"""Eres un maestro en viralidad de TikTok, experto en retención de audiencia y hooks psicológicos.
+    prompt = f"""Eres un director de cine viral experto en TikTok, psicología de retención y narrativa emocional.
 Crea un script para un video de {duration} segundos sobre: "{topic}"
 Nicho: {niche} | Estilo: {style} | Audiencia: {audience} | Idioma: {lang_name}
 
 El video tendra exactamente {clips_count} segmentos visuales coordinados.
-Tu objetivo principal es MAXIMIZAR la retención.
+Tu objetivo es MAXIMIZAR la retención y crear imágenes CINEMATOGRÁFICAS que parezcan películas.
 
 Responde UNICAMENTE con JSON valido:
 {{
-  "title": "titulo super clickbait (max 60 chars)",
-  "hook": "El gancho de los primeros 3s. Debe generar una curiosidad extrema o controversia.",
+  "title": "titulo super clickbait cinematografico (max 60 chars)",
+  "hook": "El gancho de los primeros 3s. Debe generar curiosidad extrema.",
   "cta": "llamada a la accion brutal al final",
   "pacing": "rapido y dinamico",
   "emotions": ["intriga", "shock", "revelacion"],
@@ -43,19 +43,28 @@ Responde UNICAMENTE con JSON valido:
     {{
       "order": 1,
       "narration": "texto narrado - el primer segmento DEBE ser el hook",
-      "image_keyword": "descripcion visual muy especifica y cinematografica en ingles",
+      "image_keyword": "descripcion visual cinematografica MUY especifica en ingles, como si fuera para FLUX AI",
       "duration_ratio": 0.33,
-      "subtitle_style": "viral"
+      "subtitle_style": "viral",
+      "emotion": "tense",
+      "shot_type": "close-up",
+      "lighting": "dramatic shadows"
     }}
   ]
 }}
 
-REGLAS DE VIRALIDAD:
-- Exactamente {clips_count} segmentos.
-- duration_ratio debe sumar 1.0
-- image_keyword: en ingles, listo para un modelo de IA (ej: "cinematic dark lighting, highly detailed roman soldier face").
-- subtitle_style: "viral" (para hooks), "emotional", "energetic", o "normal".
-- El HOOK es lo mas importante. Usa técnicas como: "Lo que nadie te cuenta sobre...", "POV:...", "El secreto oscuro de...".
+REGLAS DE VIRALIDAD CINEMATOGRAFICA:
+- Exactamente {clips_count} segmentos. duration_ratio debe sumar 1.0
+- image_keyword: descripcion visual ultra especifica en ingles para modelo de IA cinematografico.
+  Ejemplos:
+  * "young man sitting alone under heavy rain at midnight, tears streaming down face, cold blue lighting"
+  * "ancient roman warrior in battle, epic golden sunset, dramatic dust clouds, intense expression"
+  * "mysterious dark figure in foggy alley, neon reflections on wet pavement, film noir style"
+- emotion: una de: "sad", "tense", "epic", "motivational", "romantic", "shocking", "neutral"
+- shot_type: uno de: "extreme close-up", "close-up", "medium shot", "wide shot", "drone shot", "POV"
+- lighting: descripcion breve de iluminacion en ingles
+- subtitle_style: "viral", "emotional", "energetic", o "normal"
+- El HOOK es lo mas importante: "Lo que nadie te cuenta...", "POV:...", "El secreto oscuro de..."
 - Ritmo rapido, frases cortas, sin emojis en la narracion.
 """
 
@@ -89,6 +98,7 @@ def _process_segments(data, duration):
 
     total_ratio = sum(s.get("duration_ratio", 1/len(segments)) for s in segments)
     keywords, narration_parts, subtitles, subtitle_styles = [], [], [], []
+    enriched_segments = []
     current_time = 0.0
 
     for seg in segments:
@@ -97,10 +107,24 @@ def _process_segments(data, duration):
         narration = seg.get("narration", "").strip()
         keyword = seg.get("image_keyword", seg.get("narration", "video"))
         style = seg.get("subtitle_style", "normal")
+        emotion = seg.get("emotion", "neutral")
+        shot_type = seg.get("shot_type", "medium shot")
+        lighting = seg.get("lighting", "cinematic lighting")
 
         keywords.append(keyword)
         narration_parts.append(narration)
         subtitle_styles.append(style)
+
+        # Segmento enriquecido para el prompt engine
+        enriched_segments.append({
+            "image_keyword": keyword,
+            "narration": narration,
+            "emotion": emotion,
+            "shot_type": shot_type,
+            "lighting": lighting,
+            "subtitle_style": style,
+            "duration": seg_duration,
+        })
 
         words = narration.split()
         if words:
@@ -125,9 +149,11 @@ def _process_segments(data, duration):
         "keywords": keywords,
         "subtitles": subtitles,
         "subtitle_styles": subtitle_styles,
-        "segments": segments,
+        "segments": enriched_segments,
         "hook": data.get("hook", ""),
         "cta": data.get("cta", ""),
+        "emotions": data.get("emotions", []),
+        "pacing": data.get("pacing", "dinamico"),
         "segment_durations": [
             duration * (s.get("duration_ratio", 1/len(segments)) / total_ratio)
             for s in segments
