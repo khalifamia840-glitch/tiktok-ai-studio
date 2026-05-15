@@ -10,24 +10,31 @@ API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 
 
 def upload_video(file_path: str, job_id: str) -> str | None:
-    """Sube video a Cloudinary. Retorna URL publica o None si falla/no hay credenciales."""
+    """Sube video a Cloudinary con soporte para archivos grandes (>20MB)."""
     if not all([CLOUD_NAME, API_KEY, API_SECRET]):
+        print("[Cloudinary] ⚠️ Faltan credenciales. El video será efímero (se borrará al reiniciar Render).")
         return None
     try:
         import cloudinary
         import cloudinary.uploader
         cloudinary.config(cloud_name=CLOUD_NAME, api_key=API_KEY, api_secret=API_SECRET)
-        result = cloudinary.uploader.upload(
+        
+        print(f"[Cloudinary] Subiendo {file_path}...")
+        # Usar upload_large para videos de mas de 20MB (comun en 1080p)
+        result = cloudinary.uploader.upload_large(
             file_path,
             resource_type="video",
-            public_id=f"tiktok_videos/{job_id}",
-            overwrite=True,
-            transformation=[{"width": 1080, "height": 1920, "crop": "fill"}]
+            public_id=f"tiktok_studio/{job_id}",
+            chunk_size=6000000, # 6MB chunks
+            overwrite=True
         )
-        print(f"[Cloudinary] Video subido: {result['secure_url']}")
-        return result["secure_url"]
+        url = result.get("secure_url")
+        if url:
+            print(f"[Cloudinary] ✅ Éxito: {url}")
+            return url
+        return None
     except Exception as e:
-        print(f"[Cloudinary] Error: {e}")
+        print(f"[Cloudinary] ❌ Error crítico: {e}")
         return None
 
 

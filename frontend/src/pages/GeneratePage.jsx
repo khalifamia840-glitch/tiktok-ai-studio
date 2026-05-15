@@ -49,11 +49,20 @@ export default function GeneratePage() {
     }
   }, [location.state])
 
-  const [jobId, setJobId] = useState(null)
+  const [jobId, setJobId] = useState(() => localStorage.getItem('last_job_id'))
   const [status, setStatus] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const pollRef = useRef(null)
+
+  // Persistir jobId en localStorage
+  useEffect(() => {
+    if (jobId) {
+      localStorage.setItem('last_job_id', jobId)
+    } else {
+      localStorage.removeItem('last_job_id')
+    }
+  }, [jobId])
 
   useEffect(() => {
     if (!jobId) return
@@ -69,7 +78,6 @@ export default function GeneratePage() {
         }
       } catch (e) {
         console.error("Polling error:", e)
-        // Si hay error de red persistente, podríamos detener el poll después de N intentos
       }
     }, 2500)
     return () => clearInterval(pollRef.current)

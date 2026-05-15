@@ -261,10 +261,12 @@ def delete_video(filename: str):
         )
 
         if result["success"]:
-            update_job(job_id, progress=90, message="☁️ Subiendo video a la nube...")
+            update_job(job_id, progress=90, message="☁️ Subiendo video a la nube (Cloudinary)...")
             video_path = result["output_path"]
+            
+            # Subida persistente
             cloud_result = save_to_cloud(job_id, video_path, result.get("script", {}), req.topic)
-            video_url = cloud_result["video_url"]
+            video_url = cloud_result.get("video_url")
             
             if not video_url or video_url.startswith("/outputs/"):
                 video_url = f"/outputs/{os.path.basename(video_path)}"
