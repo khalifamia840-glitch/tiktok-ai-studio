@@ -102,8 +102,9 @@ async def _get_image_cinematic(
     positive_prompt = prompt_data.get("positive", keyword)
     character_seed = prompt_data.get("character_seed", idx * 1000)
 
-    # --- Cache key basado en el prompt ---
-    cache_key = hashlib.md5(positive_prompt.encode()).hexdigest()[:16]
+    # --- Cache key basado en el prompt + indice ---
+    # Esto evita que escenas con prompts identicos repitan la misma imagen
+    cache_key = hashlib.md5(f"{positive_prompt}_{idx}".encode()).hexdigest()[:16]
     if cache_key in _image_cache:
         cached = _image_cache[cache_key]
         if os.path.exists(cached):

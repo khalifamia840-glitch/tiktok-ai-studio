@@ -15,6 +15,7 @@ Resuelve:
 import os
 import io
 import logging
+import hashlib
 from PIL import Image, ImageFilter
 
 logger = logging.getLogger(__name__)
@@ -38,8 +39,8 @@ def validate_image(path: str) -> bool:
     if not os.path.exists(path):
         logger.warning("[Validate] No existe: %s", path)
         return False
-    if os.path.getsize(path) == 0:
-        logger.warning("[Validate] Archivo vacío (0 bytes): %s", path)
+    if os.path.getsize(path) < 2000:
+        logger.warning("[Validate] Archivo demasiado pequeño (<2KB): %s", path)
         return False
 
     try:
@@ -49,6 +50,15 @@ def validate_image(path: str) -> bool:
     except Exception as e:
         logger.warning("[Validate] Imagen corrupta %s: %s", path, e)
         return False
+
+
+def get_image_hash(path: str) -> str:
+    """Calcula el hash MD5 del contenido del archivo para detectar duplicados."""
+    try:
+        with open(path, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()
+    except Exception:
+        return ""
 
 
 def get_image_info(path: str) -> dict:
@@ -229,19 +239,25 @@ def normalize_batch(
     """
     os.makedirs(output_dir, exist_ok=True)
     results: list[str] = []
+    seen_hashes: set[str] = set()
 
     for idx, src in enumerate(source_paths):
         out_path = os.path.join(output_dir, f"normalized_{idx:03d}.jpg")
         success = False
 
-        # Intento de normalización con retry
-        for attempt in range(max_retries + 1):
-            if not validate_image(src):
-                logger.warning(
-                    "[Batch] Escena %d/%d: imagen inválida (intento %d/%d): %s",
-                    idx + 1, len(source_paths), attempt + 1, max_retries + 1, src
-                )
-                break  # Si no existe/vacía, no tiene sentido reintentar
+        # 1. Verificar si es duplicada antes de procesar
+        img_hash = get_image_hash(src)
+        if img_hash and img_hash in seen_hashes:
+            logger.warning("[Batch] Escena %d/%d: Imagen duplicada detectada. Usando fallback.", idx + 1, len(source_paths))
+            # No usamos la duplicada, forzamos fallback para tener variedad
+        else:
+            if img_hash:
+                seen_hashes.add(img_hash)
+
+            # Intento de normalización con retry
+            for attempt in range(max_retries + 1):
+                if not validate_image(src):
+                    break
 
             result = normalize_image(src, out_path)
             if result and validate_image(result):
