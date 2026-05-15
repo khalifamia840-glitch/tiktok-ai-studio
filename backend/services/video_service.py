@@ -201,7 +201,6 @@ def _build(
     # Añadir música de fondo si no es fast_mode
     if not fast_mode:
         from moviepy.editor import CompositeAudioClip
-        import os
         bgm_path = "assets/bgm.mp3"
         if os.path.exists(bgm_path):
             try:
