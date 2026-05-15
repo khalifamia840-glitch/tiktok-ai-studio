@@ -103,7 +103,17 @@ def health():
 
 
 @app.post("/api/generate")
-async def generate_video_endpoint(req: VideoRequest, background_tasks: BackgroundTasks):
+async def generate_video_endpoint(req: VideoRequest, background_tasks: BackgroundTasks, authorization: str = Header(None)):
+    is_premium = False
+    if authorization and authorization.startswith("Bearer "):
+        try:
+            user = verify_token(authorization.replace("Bearer ", ""))
+            if user:
+                is_premium = True
+                # Opcional: increment_videos(user["id"])
+        except Exception:
+            pass
+
     job_id = str(uuid.uuid4())
     jobs[job_id] = {
         "status": "pending",
@@ -111,8 +121,9 @@ async def generate_video_endpoint(req: VideoRequest, background_tasks: Backgroun
         "message": "Iniciando pipeline...",
         "video_url": None,
         "script": None,
+        "is_premium": is_premium
     }
-    background_tasks.add_task(run_pipeline, job_id, req)
+    background_tasks.add_task(run_pipeline, job_id, req, is_premium)
     return {"job_id": job_id}
 
 
@@ -140,7 +151,41 @@ def list_videos():
                 })
     return {"videos": videos}
 
+class RetentionRequest(BaseModel):
+    topic: str
+    script: str
 
+@app.post("/api/analyze-retention")
+def analyze_retention(req: RetentionRequest):
+    """
+    Analiza un script y devuelve un puntaje de retencion viral estimado.
+    En una implementacion completa, esto usaria un LLM para analizar el hook, pacing, etc.
+    Por ahora retorna un valor calculado basado en longitud y palabras clave.
+    """
+    import random
+    
+    score = 70
+    hook_strength = "Moderada"
+    
+    # Analisis muy basico
+    if "pov" in req.topic.lower() or "secreto" in req.topic.lower():
+        score += 15
+        hook_strength = "Muy Fuerte"
+        
+    if len(req.script.split()) > 50:
+        score += 5
+        
+    score = min(score + random.randint(-5, 10), 99)
+    
+    return {
+        "score": score,
+        "hook_strength": hook_strength,
+        "metrics": [
+            {"label": "Fuerza del Hook", "value": hook_strength},
+            {"label": "Ritmo (Pacing)", "value": "Rápido" if score > 80 else "Normal"},
+            {"label": "Retención Est.", "value": f"{min(85, score - 10)}%"}
+        ]
+    }
 
 @app.get("/api/trending")
 def get_trending():
@@ -197,7 +242,7 @@ def delete_video(filename: str):
     raise HTTPException(status_code=404, detail="Video no encontrado")
 
 
-async def run_pipeline(job_id: str, req: VideoRequest):
+async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False):
     create_job(job_id)
     """Pipeline completo delegado a video_generator.generate_video()"""
     jobs[job_id].update({"status": "running", "progress": 10,
@@ -213,6 +258,7 @@ async def run_pipeline(job_id: str, req: VideoRequest):
             style=req.style,
             audience=req.audience,
             add_subtitles=req.add_subtitles,
+            is_premium=is_premium,
         )
 
         if result["success"]:

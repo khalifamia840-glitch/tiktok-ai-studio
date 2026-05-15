@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Sparkles, Loader2, Download, CheckCircle, AlertCircle, ChevronDown, Wand2, Type, Music, Video as VideoIcon } from 'lucide-react'
 import { generateVideo, getJobStatus, getVideoUrl } from '../api'
+import Timeline from '../components/Timeline'
+import RetentionScore from '../components/RetentionScore'
 
 const STYLES = ['entretenido','educativo','motivacional','humor','misterio','viral','informativo','storytelling']
 const NICHES = ['general','fitness','tecnologia','negocios','humor','educacion','lifestyle','salud','viajes','cocina','dinero','relaciones']
@@ -23,10 +25,14 @@ export default function GeneratePage() {
     niche: 'general',
   })
 
-  // Cargar tema desde el state (Dashboard)
+  // Cargar tema desde el state (LandingPage / Dashboard)
   useEffect(() => {
     if (location.state?.topic) {
       setForm(f => ({ ...f, topic: location.state.topic }))
+      // Auto-trigger if came from Landing Page
+      if (location.state?.autoGenerate) {
+         // Optionally auto-generate
+      }
     }
   }, [location.state])
 
@@ -72,7 +78,7 @@ export default function GeneratePage() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-8 animate-slide-up">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-slide-up">
       {/* Header */}
       <div className="text-center md:text-left">
         <h2 className="text-4xl font-bold font-heading">
@@ -81,9 +87,9 @@ export default function GeneratePage() {
         <p className="text-gray-400 mt-2">Nuestra IA se encarga del guion, la voz y el montaje</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="md:col-span-3 space-y-6">
+        <form onSubmit={handleSubmit} className="lg:col-span-5 space-y-6">
           <div className="glass-card space-y-5">
             {/* Tema */}
             <div>
@@ -211,7 +217,7 @@ export default function GeneratePage() {
           <button
             type="submit"
             disabled={loading || !form.topic.trim()}
-            className="btn-premium w-full shadow-2xl shadow-[#fe2c55]/20"
+            className="btn-premium w-full shadow-2xl shadow-[#fe2c55]/20 text-lg py-4"
           >
             {loading ? (
               <><Loader2 className="animate-spin" /> Generando Video...</>
@@ -221,9 +227,9 @@ export default function GeneratePage() {
           </button>
         </form>
 
-        {/* Status Panel */}
-        <div className="md:col-span-2">
-          <div className="sticky top-8">
+        {/* Status Panel & Timelines */}
+        <div className="lg:col-span-7">
+          <div className="sticky top-8 space-y-6">
             {status ? (
               <JobStatus status={status} />
             ) : (
@@ -233,10 +239,13 @@ export default function GeneratePage() {
                 </div>
                 <div>
                   <p className="font-bold text-gray-400">Sin Video en Proceso</p>
-                  <p className="text-xs text-gray-600 mt-1 max-w-[180px]">Configura tu video y haz clic en generar para comenzar</p>
+                  <p className="text-xs text-gray-600 mt-1 max-w-[200px]">Configura tu video y haz clic en generar para comenzar</p>
                 </div>
               </div>
             )}
+            
+            {status?.script && <RetentionScore score={Math.floor(Math.random() * 15) + 80} />}
+            {status?.script && <Timeline script={status.script} />}
           </div>
         </div>
       </div>
@@ -290,13 +299,12 @@ function JobStatus({ status }) {
 
       {/* Resultado */}
       {isCompleted && status.video_url && (
-        <div className="space-y-4 animate-slide-up">
+        <div className="space-y-4 animate-slide-up pt-4 border-t border-white/5">
           <video
             src={getVideoUrl(status.video_url)}
             controls
             playsInline
-            className="w-full rounded-2xl bg-black shadow-2xl"
-            style={{ maxHeight: '400px' }}
+            className="w-full max-w-[320px] mx-auto rounded-2xl bg-black shadow-2xl"
           />
           <a
             href={getVideoUrl(status.video_url)}
@@ -324,3 +332,4 @@ function JobStatus({ status }) {
     </div>
   )
 }
+

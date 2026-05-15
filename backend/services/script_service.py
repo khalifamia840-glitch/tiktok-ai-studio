@@ -1,4 +1,4 @@
-﻿"""
+"""
 Generacion de scripts con Groq - con segmentos coordinados, nicho y mood
 """
 import os, json, re, asyncio
@@ -25,35 +25,38 @@ def _call_groq(topic, style, audience, duration, language, niche="general"):
     lang_name = "espanol" if language == "es" else "English"
     clips_count = max(4, duration // 5)
 
-    prompt = f"""Eres un experto creador de contenido viral para TikTok.
+    prompt = f"""Eres un maestro en viralidad de TikTok, experto en retención de audiencia y hooks psicológicos.
 Crea un script para un video de {duration} segundos sobre: "{topic}"
 Nicho: {niche} | Estilo: {style} | Audiencia: {audience} | Idioma: {lang_name}
 
 El video tendra exactamente {clips_count} segmentos visuales coordinados.
+Tu objetivo principal es MAXIMIZAR la retención.
 
 Responde UNICAMENTE con JSON valido:
 {{
-  "title": "titulo atractivo (max 60 chars)",
-  "hook": "frase gancho primeros 3 segundos - debe ser IMPACTANTE",
-  "cta": "llamada a la accion final",
+  "title": "titulo super clickbait (max 60 chars)",
+  "hook": "El gancho de los primeros 3s. Debe generar una curiosidad extrema o controversia.",
+  "cta": "llamada a la accion brutal al final",
+  "pacing": "rapido y dinamico",
+  "emotions": ["intriga", "shock", "revelacion"],
   "segments": [
     {{
       "order": 1,
-      "narration": "texto que se narra en este segmento",
-      "image_keyword": "descripcion visual especifica en ingles",
+      "narration": "texto narrado - el primer segmento DEBE ser el hook",
+      "image_keyword": "descripcion visual muy especifica y cinematografica en ingles",
       "duration_ratio": 0.33,
-      "subtitle_style": "normal"
+      "subtitle_style": "viral"
     }}
   ]
 }}
 
-REGLAS:
-- Exactamente {clips_count} segmentos
+REGLAS DE VIRALIDAD:
+- Exactamente {clips_count} segmentos.
 - duration_ratio debe sumar 1.0
-- image_keyword: descripcion visual detallada en ingles
-- subtitle_style: "normal", "viral", "emotional" o "energetic"
-- El hook debe empezar con algo que ENGANCHE (pregunta, dato sorprendente, controversia)
-- Narración fluida y natural, sin emojis
+- image_keyword: en ingles, listo para un modelo de IA (ej: "cinematic dark lighting, highly detailed roman soldier face").
+- subtitle_style: "viral" (para hooks), "emotional", "energetic", o "normal".
+- El HOOK es lo mas importante. Usa técnicas como: "Lo que nadie te cuenta sobre...", "POV:...", "El secreto oscuro de...".
+- Ritmo rapido, frases cortas, sin emojis en la narracion.
 """
 
     response = get_client().chat.completions.create(

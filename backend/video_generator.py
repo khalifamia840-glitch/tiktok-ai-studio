@@ -36,6 +36,7 @@ async def generate_video(
     style: str = "entretenido",
     audience: str = "general",
     add_subtitles: bool = True,
+    is_premium: bool = False,
 ) -> dict[str, Any]:
     """
     Orquesta el pipeline completo de generacion de video TikTok.
@@ -49,6 +50,7 @@ async def generate_video(
         style:         Estilo narrativo (p.ej. "entretenido", "educativo").
         audience:      Audiencia objetivo (p.ej. "jovenes", "general").
         add_subtitles: Si True, genera y superpone subtitulos en el video.
+        is_premium:    Si True, omite marca de agua. Si False, anade marca de agua.
 
     Returns:
         Dict con los campos:
@@ -160,6 +162,7 @@ async def generate_video(
             subtitles=subtitles,
             title=title,
             segment_durations=segment_durations if segment_durations else None,
+            is_premium=is_premium,
         )
     except Exception as exc:
         return {

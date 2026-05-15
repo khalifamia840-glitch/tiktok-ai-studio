@@ -33,10 +33,11 @@ async def assemble_video(
     subtitles: list,
     title: str,
     segment_durations: list = None,
+    is_premium: bool = False,
 ) -> str:
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
-        None, _build, job_id, audio_path, media_paths, subtitles, title, segment_durations
+        None, _build, job_id, audio_path, media_paths, subtitles, title, segment_durations, is_premium
     )
 
 
@@ -121,6 +122,7 @@ def _build(
     subtitles: list,
     title: str,
     segment_durations: list = None,
+    is_premium: bool = False,
 ) -> str:
     """
     Ensambla el video final y limpia los archivos temporales.
@@ -184,6 +186,19 @@ def _build(
             layers.append(_make_subtitle_clip(text, start, end, total))
         except Exception as exc:
             logger.warning("[Subtitulo] Error al crear clip: %s", exc)
+
+    if not is_premium:
+        try:
+            from moviepy.editor import TextClip
+            watermark = (
+                TextClip("Generado con TikTok AI Studio", font="Arial", fontsize=24, color='white', bg_color='black')
+                .set_position(("center", "bottom"))
+                .set_duration(total)
+                .set_opacity(0.6)
+            )
+            layers.append(watermark)
+        except Exception as exc:
+            logger.warning("[Watermark] No se pudo crear marca de agua: %s", exc)
 
     final = CompositeVideoClip(layers, size=(W, H)) if len(layers) > 1 else video
 
