@@ -272,21 +272,13 @@ def _build(
     except OSError as exc:
         logger.warning("[Cleanup] No se pudo eliminar %s: %s", media_dir, exc)
 
-    # Eliminar outputs/audio/{job_id}.mp3
+    # Eliminar todos los archivos temporales de audio
     audio_file = f"outputs/audio/{job_id}.mp3"
     try:
-        os.remove(audio_file)
-        logger.info("[Cleanup] Eliminado %s", audio_file)
+        if os.path.exists(audio_file):
+            os.remove(audio_file)
+            logger.info("[Cleanup] Eliminado %s", audio_file)
     except OSError as exc:
         logger.warning("[Cleanup] No se pudo eliminar %s: %s", audio_file, exc)
-
-    # Eliminar todos los archivos _sm.jpg intermedios
-    for p in resized:
-        if p.endswith("_sm.jpg"):
-            try:
-                os.remove(p)
-                logger.info("[Cleanup] Eliminado %s", p)
-            except OSError as exc:
-                logger.warning("[Cleanup] No se pudo eliminar %s: %s", p, exc)
 
     return out_path
