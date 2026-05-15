@@ -350,7 +350,7 @@ export default function GeneratePage() {
 
 function JobStatus({ status }) {
   const isCompleted = status.status === 'completed'
-  const isError = status.status === 'error'
+  const isError = status.status === 'error' || status.status === 'failed'
 
   return (
     <div className="glass-card space-y-6">

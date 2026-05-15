@@ -4,6 +4,7 @@ TikTok AI Video Generator - FastAPI Backend
 Funciona en Windows, macOS y Linux
 """
 import os, uuid, asyncio
+import json
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -34,8 +35,9 @@ app.add_middleware(
 os.makedirs("outputs", exist_ok=True)
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
-# Estado de trabajos en memoria (en produccion usar Redis/DB)
-jobs: dict = {}
+# Inicializar DB al arranque
+from jobs_db import init_jobs_db
+init_jobs_db()
 
 
 class VideoRequest(BaseModel):
@@ -117,35 +119,23 @@ async def generate_video_endpoint(req: VideoRequest, background_tasks: Backgroun
             pass
 
     job_id = str(uuid.uuid4())
-    jobs[job_id] = {
-        "status": "pending",
-        "progress": 0,
-        "message": "Iniciando pipeline...",
-        "video_url": None,
-        "script": None,
-        "is_premium": is_premium
-    }
+    create_job(job_id)
     background_tasks.add_task(run_pipeline, job_id, req, is_premium)
     return {"job_id": job_id}
 
 
 @app.get("/api/status/{job_id}")
 def get_status(job_id: str):
-    # Buscar en memoria primero, luego en DB
-    if job_id in jobs:
-        return jobs[job_id]
-    
-    db_job = get_job(job_id)
-    if db_job:
-        return db_job
-    
-    # En lugar de 404, devolver un estado de error para que el frontend no rompa
-    return {
-        "status": "error",
-        "progress": 0,
-        "message": "Sesión expirada o Job ID no encontrado. Por favor, intenta de nuevo.",
-        "video_url": None
-    }
+    # Buscar en DB directamente (Persistente)
+    job = get_job(job_id)
+    if not job:
+        return {
+            "status": "error",
+            "progress": 0,
+            "message": "ID de video no encontrado o sesión expirada.",
+            "video_url": None
+        }
+    return job
 
 
 @app.get("/api/videos")
@@ -250,14 +240,9 @@ def delete_video(filename: str):
         os.remove(filepath)
         return {"message": "Video eliminado"}
     raise HTTPException(status_code=404, detail="Video no encontrado")
-
-
-async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False):
-    create_job(job_id)
+async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False):
     """Pipeline completo delegado a video_generator.generate_video()"""
-    jobs[job_id].update({"status": "running", "progress": 10,
-                          "message": "Iniciando pipeline de generacion..."})
-    update_job(job_id, status="running", progress=10, message="Iniciando pipeline de generacion...")
+    update_job(job_id, status="running", progress=10, message="✍️ Generando guion viral...")
     try:
         result = await _generate_video(
             topic=req.topic,
@@ -271,43 +256,34 @@ async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False)
             is_premium=is_premium,
             visual_style=req.visual_style,
             upscaler=req.upscaler,
+            # Pasar callback de progreso si se implementa en video_generator
+            job_id=job_id 
         )
 
         if result["success"]:
+            update_job(job_id, progress=90, message="☁️ Subiendo video a la nube...")
             video_path = result["output_path"]
-            # Subir a Cloudinary si está configurado, sino usar URL local
             cloud_result = save_to_cloud(job_id, video_path, result.get("script", {}), req.topic)
             video_url = cloud_result["video_url"]
-            # Si no hay URL de Cloudinary, usar ruta local
+            
             if not video_url or video_url.startswith("/outputs/"):
                 video_url = f"/outputs/{os.path.basename(video_path)}"
+            
             save_video_stats(job_id, req.topic, req.style, req.niche, req.duration)
-            jobs[job_id].update({
-                "status": "completed",
-                "progress": 100,
-                "message": "Video listo para descargar",
-                "video_url": video_url,
-                "script": result.get("script"),
-            })
-            update_job(job_id, status="completed", progress=100, message="Video listo para descargar", video_url=video_url)
+            
+            update_job(
+                job_id, 
+                status="completed", 
+                progress=100, 
+                message="✅ ¡Video listo!", 
+                video_url=video_url,
+                script=json.dumps(result.get("script")) if result.get("script") else None
+            )
         else:
-            error_msg = f"Error en etapa '{result.get('error_stage')}': {result.get('error_message')}"
-            jobs[job_id].update({
-                "status": "error",
-                "progress": 0,
-                "message": error_msg,
-                "video_url": None,
-                "script": result.get("script"),
-            })
-            update_job(job_id, status="error", progress=0, message=error_msg)
+            error_msg = f"Error en {result.get('error_stage')}: {result.get('error_message')}"
+            update_job(job_id, status="failed", progress=0, message=error_msg, error=error_msg)
 
     except Exception as e:
         import traceback
-        error_msg = f"Error inesperado: {str(e)}"
-        jobs[job_id].update({
-            "status": "error",
-            "message": error_msg,
-            "progress": 0,
-            "traceback": traceback.format_exc(),
-        })
-        update_job(job_id, status="error", progress=0, message=error_msg)
+        error_msg = f"Error crítico: {str(e)}"
+        update_job(job_id, status="failed", progress=0, message=error_msg, error=traceback.format_exc())

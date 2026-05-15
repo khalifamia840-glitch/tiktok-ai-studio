@@ -23,6 +23,10 @@ def init_jobs_db():
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    conn.execute("""
+        UPDATE jobs SET status='failed', message='Generación interrumpida por reinicio del servidor.'
+        WHERE status IN ('running', 'pending')
+    """)
     conn.commit()
     conn.close()
 
