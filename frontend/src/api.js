@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 0,
+  timeout: 60000, // 60s timeout para procesos largos
 })
 
 // Interceptor para agregar token si existe
@@ -19,6 +19,19 @@ api.interceptors.request.use(config => {
   }
   return config
 })
+
+// Interceptor para logs de error globales
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error("🌐 API ERROR:", {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data
+    })
+    return Promise.reject(error)
+  }
+)
 
 // --- AUTH ---
 export const login = (email, password) => 
