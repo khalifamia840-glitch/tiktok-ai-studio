@@ -134,10 +134,18 @@ def get_status(job_id: str):
     # Buscar en memoria primero, luego en DB
     if job_id in jobs:
         return jobs[job_id]
+    
     db_job = get_job(job_id)
     if db_job:
         return db_job
-    raise HTTPException(status_code=404, detail="Job no encontrado")
+    
+    # En lugar de 404, devolver un estado de error para que el frontend no rompa
+    return {
+        "status": "error",
+        "progress": 0,
+        "message": "Sesión expirada o Job ID no encontrado. Por favor, intenta de nuevo.",
+        "video_url": None
+    }
 
 
 @app.get("/api/videos")

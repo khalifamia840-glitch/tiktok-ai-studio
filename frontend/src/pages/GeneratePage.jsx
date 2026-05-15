@@ -60,15 +60,18 @@ export default function GeneratePage() {
     pollRef.current = setInterval(async () => {
       try {
         const s = await getJobStatus(jobId)
+        if (!s) return
+        
         setStatus(s)
-        if (s.status === 'completed' || s.status === 'error') {
+        if (s.status === 'completed' || s.status === 'error' || s.status === 'failed') {
           clearInterval(pollRef.current)
           setLoading(false)
         }
       } catch (e) {
-        console.error(e)
+        console.error("Polling error:", e)
+        // Si hay error de red persistente, podríamos detener el poll después de N intentos
       }
-    }, 2000)
+    }, 2500)
     return () => clearInterval(pollRef.current)
   }, [jobId])
 

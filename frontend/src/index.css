@@ -82,6 +82,17 @@
          focus:ring-[#fe2c55]/50 focus:border-[#fe2c55] transition-all;
 }
 
+/* Fix para dropdowns blancos en navegadores */
+select.input-premium option {
+  @apply bg-[#0f0f0f] text-white py-2;
+}
+
+/* Evitar rectangulos blancos gigantes */
+.relative select {
+  @apply cursor-pointer;
+  max-height: 300px;
+}
+
 /* Sidebar Custom Scroll */
 .sidebar-scroll {
   scrollbar-width: none;
