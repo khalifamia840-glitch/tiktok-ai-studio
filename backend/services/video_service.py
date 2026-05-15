@@ -147,6 +147,10 @@ def _build(
     resized: list[str] = []
     for p in media_paths:
         try:
+            if not os.path.exists(p):
+                logger.warning("[Video] Archivo no existe: %s", p)
+                resized.append(p)
+                continue
             img = Image.open(p).convert("RGB").resize((W, H), Image.LANCZOS)
             out = p.replace(".jpg", "_sm.jpg")
             img.save(out, "JPEG", quality=85)
@@ -178,12 +182,24 @@ def _build(
         except Exception as exc:
             logger.warning("[Video] No se pudo crear clip para %s: %s", p, exc)
 
-    # Req 5.9: RuntimeError descriptivo si no hay clips
+    # Fallback de emergencia: si no hay clips, crear imagen negra
     if not clips:
-        raise RuntimeError(
-            f"No se pudieron cargar las imagenes para el job '{job_id}'. "
-            "Verifica que los archivos de media existan y sean imagenes JPEG validas."
-        )
+        logger.error("[Video] No se pudo cargar ninguna imagen para job '%s'. Usando clip de emergencia.", job_id)
+        try:
+            from PIL import Image as PILImage
+            import io as _io
+            import tempfile
+            emergency_img = PILImage.new("RGB", (W, H), (10, 10, 10))
+            emergency_path = f"outputs/media/{job_id}/emergency.jpg"
+            os.makedirs(f"outputs/media/{job_id}", exist_ok=True)
+            emergency_img.save(emergency_path, "JPEG")
+            clips = [ImageClip(emergency_path).set_duration(total)]
+        except Exception as emg_exc:
+            raise RuntimeError(
+                f"No se pudieron cargar las imagenes para el job '{job_id}'. "
+                "Verifica que los archivos de media existan y sean imagenes JPEG validas."
+            ) from emg_exc
+
 
     video = (
         concatenate_videoclips(clips, method="compose" if not fast_mode else "chain")

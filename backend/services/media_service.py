@@ -165,37 +165,36 @@ async def _get_image_cinematic(
 
 def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
     """
-    Pollinations.ai con FLUX — Gratis, sin API key, HD.
-    Genera 3 variantes y elige la de mayor calidad (tamaño como proxy).
+    Pollinations.ai con FLUX — Gratis, sin API key.
+    Usa 1 sola variante para evitar timeouts de 120s.
     """
     try:
-        encoded = urllib.parse.quote(prompt)
-        best_path = None
-        best_size = 0
-
-        for variant_seed in [seed, seed + 7, seed + 13]:
-            url = (
-                f"https://image.pollinations.ai/prompt/{encoded}"
-                f"?width=576&height=1024&model=flux&nologo=true&enhance=true&seed={variant_seed}"
-            )
+        # Limitar el prompt a 400 chars para evitar URLs demasiado largas
+        prompt_short = prompt[:400]
+        encoded = urllib.parse.quote(prompt_short)
+        url = (
+            f"https://image.pollinations.ai/prompt/{encoded}"
+            f"?width=576&height=1024&model=flux&nologo=true&enhance=true&seed={seed}"
+        )
+        r = requests.get(url, timeout=45, allow_redirects=True)
+        
+        # Verificar que la respuesta sea realmente una imagen
+        content_type = r.headers.get("content-type", "")
+        is_image = content_type.startswith("image/") or len(r.content) > 15000
+        
+        if r.status_code == 200 and is_image:
             try:
-                r = requests.get(url, timeout=40, allow_redirects=True)
-                if r.status_code == 200 and len(r.content) > 10000:
-                    if len(r.content) > best_size:
-                        best_size = len(r.content)
-                        best_content = r.content
-            except Exception:
-                continue
-
-        if best_size > 0:
-            img = Image.open(io.BytesIO(best_content)).convert("RGB")
-            img = _crop_to_tiktok(img, HD_W, HD_H)
-            out = f"outputs/media/{job_id}/img_{idx}.jpg"
-            img.save(out, "JPEG", quality=92)
-            print(f"[Pollinations FLUX] OK escena {idx} ({best_size//1024}KB)")
-            return out
+                img = Image.open(io.BytesIO(r.content)).convert("RGB")
+                img = _crop_to_tiktok(img, HD_W, HD_H)
+                out = f"outputs/media/{job_id}/img_{idx}.jpg"
+                img.save(out, "JPEG", quality=90)
+                print(f"[Pollinations FLUX] OK escena {idx} ({len(r.content)//1024}KB)")
+                return out
+            except Exception as pil_err:
+                print(f"[Pollinations FLUX] PIL error escena {idx}: {pil_err}")
+                return None
     except Exception as e:
-        print(f"[Pollinations FLUX] Error: {e}")
+        print(f"[Pollinations FLUX] Error escena {idx}: {e}")
     return None
 
 
@@ -460,25 +459,40 @@ def _crop_to_tiktok(img: Image.Image, target_w: int = HD_W, target_h: int = HD_H
 
 
 def _dark_cinematic_placeholder(keyword: str, idx: int, job_id: str, fast_mode: bool) -> str:
-    """Placeholder cinematografico oscuro con gradiente."""
-    import numpy as np
-    w, h = (FAST_W, FAST_H) if fast_mode else (HD_W, HD_H)
-    arr = np.zeros((h, w, 3), dtype=np.uint8)
+    """Placeholder cinematografico oscuro con gradiente. SIEMPRE devuelve una imagen valida."""
+    try:
+        import numpy as np
+        w, h = (FAST_W, FAST_H) if fast_mode else (540, 960)  # Usar resolucion base siempre
+        arr = np.zeros((h, w, 3), dtype=np.uint8)
 
-    palette = [(15, 8, 30), (8, 15, 30), (30, 8, 15), (8, 25, 20)]
-    c = palette[idx % len(palette)]
-    for y in range(h):
-        ratio = y / h
-        arr[y] = [
-            int(c[0] + (c[0] * 1.5) * ratio),
-            int(c[1] + (c[1] * 1.5) * ratio),
-            int(c[2] + (c[2] * 1.5) * ratio),
-        ]
+        palette = [(15, 8, 30), (8, 15, 30), (30, 8, 15), (8, 25, 20)]
+        c = palette[idx % len(palette)]
+        for y in range(h):
+            ratio = y / h
+            arr[y] = [
+                min(255, int(c[0] + (c[0] * 1.5) * ratio)),
+                min(255, int(c[1] + (c[1] * 1.5) * ratio)),
+                min(255, int(c[2] + (c[2] * 1.5) * ratio)),
+            ]
 
-    img = Image.fromarray(arr, "RGB")
-    draw = ImageDraw.Draw(img)
-    words = keyword.upper()[:30]
-    draw.text((w // 2, h // 2), words, fill=(160, 160, 160), anchor="mm")
-    out = f"outputs/media/{job_id}/img_{idx}.jpg"
-    img.save(out, "JPEG")
-    return out
+        img = Image.fromarray(arr, "RGB")
+        try:
+            draw = ImageDraw.Draw(img)
+            # NO usar anchor="mm" — no funciona con la fuente por defecto de PIL
+            words = keyword.upper()[:25]
+            draw.text((w // 2 - 50, h // 2), words, fill=(160, 160, 160))
+        except Exception:
+            pass  # Si el texto falla, guardar la imagen sin texto igualmente
+
+        out = f"outputs/media/{job_id}/img_{idx}.jpg"
+        img.save(out, "JPEG", quality=85)
+        print(f"[Placeholder] Creado fallback oscuro escena {idx}")
+        return out
+    except Exception as e:
+        # Ultimo recurso absoluto: imagen negra pura
+        print(f"[Placeholder] Error critico: {e}, creando imagen negra")
+        w, h = 540, 960
+        img = Image.new("RGB", (w, h), (10, 10, 10))
+        out = f"outputs/media/{job_id}/img_{idx}.jpg"
+        img.save(out, "JPEG")
+        return out
