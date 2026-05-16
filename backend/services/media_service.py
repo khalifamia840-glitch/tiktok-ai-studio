@@ -41,6 +41,21 @@ FAST_W, FAST_H = 540, 960
 HD_W, HD_H = 1080, 1920
 
 
+def _log_response_debug(response, provider: str):
+    """Guarda detalles crudos de la respuesta para auditoría en caso de error."""
+    try:
+        debug_info = (
+            f"PROVIDER: {provider}\n"
+            f"STATUS: {response.status_code}\n"
+            f"HEADERS: {dict(response.headers)}\n"
+            f"BODY (START): {response.text[:2000]}\n"
+        )
+        with open("debug_response.txt", "a", encoding="utf-8") as f:
+            f.write("\n" + "="*50 + "\n")
+            f.write(debug_info)
+    except Exception as e:
+        print(f"[DebugLog] Error guardando log: {e}")
+
 # ─────────────────────────────────────────────
 # FUNCION PRINCIPAL
 # ─────────────────────────────────────────────
@@ -81,7 +96,8 @@ async def fetch_media(
     import json
     from cloud_service import upload_image
     
-    scenes_ready = {} # Usar dict para mantener el orden por index
+    scenes_ready: dict[int, str] = {}   # idx -> cloud/local URL
+    path_by_idx: dict[int, str] = {}    # idx -> local path (para video assembly)
     
     pending_tasks = [
         asyncio.create_task(_get_image_cinematic(kws[i], prompt_data_list[i], i, job_id, fast_mode, upscaler))
@@ -91,23 +107,38 @@ async def fetch_media(
     for completed_task in asyncio.as_completed(pending_tasks):
         idx, path = await completed_task
         if path:
-            # Subir a la nube inmediatamente para que el frontend pueda verlo
-            cloud_url = upload_image(path, job_id, idx)
+            # VALIDACIÓN ESTRICTA: No permitir placeholders ni archivos inexistentes
+            if not os.path.exists(path):
+                raise Exception(f"REAL IMAGE FAILED: Scena {idx} - File not found at {path}")
             
-            # Si falla la nube, usar URL estatica relativa (fallback)
+            if "placeholder" in path.lower():
+                raise Exception(f"STRICT MODE: Placeholder detected for scene {idx}. Stopping render.")
+
+            path_by_idx[idx] = path
+
+            # Subir a la nube para visibilidad inmediata
+            cloud_url = upload_image(path, job_id, idx)
             scene_url = cloud_url if cloud_url else f"/outputs/media/{job_id}/{os.path.basename(path)}"
             scenes_ready[idx] = scene_url
             
-            # Ordenar escenas por index para el storyboard
+            # Storyboard parcial
             sorted_scenes = [scenes_ready[k] for k in sorted(scenes_ready.keys())]
-            
-            # Actualizar DB con el storyboard parcial
             update_job(job_id, scenes_json=json.dumps(sorted_scenes))
+        else:
+            # Si el router devolvió None, todos los proveedores fallaron
+            print(f"[fetch_media] FATAL: La escena {idx} falló en todos los proveedores IA.")
+            raise Exception(f"AI IMAGE PIPELINE FAILED at scene {idx}. All providers returned invalid results.")
 
-    # Re-obtener resultados finales
-    results = await asyncio.gather(*pending_tasks)
-    final_paths = [r[1] for r in results]
-    return list(final_paths)
+    # Reconstruir lista ORDENADA
+    final_paths = [path_by_idx.get(i) for i in range(clips_needed)]
+    
+    # Verificación final de integridad
+    for i, p in enumerate(final_paths):
+        if not p or not os.path.exists(p):
+            raise Exception(f"INTEGRITY ERROR: Scene {i} is missing its final image asset.")
+            
+    return final_paths
+
 
 
 # ─────────────────────────────────────────────
@@ -142,62 +173,123 @@ async def _get_image_cinematic(
             except Exception:
                 pass
 
-    # --- ELITE MODE: Google Veo 3 (via Elite Router) ---
-    # En producción 2026, Veo 3 es el estándar de realismo extremo.
-    # Aquí implementamos el ruteo inteligente.
-    veo_api_key = os.getenv("GOOGLE_VEO_API_KEY", "")
-    if veo_api_key and not fast_mode:
+    # ─── FAST MODE ────────────────────────────────────────────────────
+    if fast_mode:
+        path = await loop.run_in_executor(
+            None, _pollinations_schnell, positive_prompt, character_seed, idx, job_id
+        )
+        if path:
+            from image_processor import validate_image
+            if validate_image(path):
+                _image_cache[cache_key] = path
+                return idx, path
+        
+        # Si schnell falla en fast mode, intentar cinematic (último recurso)
+        path = await loop.run_in_executor(
+            None, _pollinations_cinematic, positive_prompt, character_seed, idx, job_id
+        )
+        if path:
+            from image_processor import validate_image
+            if validate_image(path):
+                _image_cache[cache_key] = path
+                return idx, path
+        
+        # En FAST MODE permitimos placeholder solo si es explícitamente para testeo, 
+        # pero para el flujo principal de producción lanzaremos None para que fetch_media falle.
+        return idx, None
+
+
+    # ─── MODO NORMAL: cadena de proveedores (PRIORIDAD ALTA CALIDAD) ──────────
+
+    # PRIORIDAD 1: Replicate FLUX schnell (Calidad Profesional)
+    replicate_key = os.getenv("REPLICATE_API_KEY", "")
+    if replicate_key:
+        print(f"[Router] Escena {idx}: intentando Replicate FLUX...")
+        path = await loop.run_in_executor(
+            None, _replicate_http, positive_prompt, character_seed, idx, job_id, replicate_key
+        )
+        if path:
+            from image_processor import validate_image
+            if validate_image(path):
+                path = _apply_upscale(path, upscaler, fast_mode)
+                _image_cache[cache_key] = path
+                print(f"[Router] Escena {idx}: OK via Replicate")
+                return idx, path
+            else:
+                print(f"[Router] Escena {idx}: Replicate devolvió imagen inválida")
+
+    # PRIORIDAD 2: Google AI Studio Imagen 3 (Realismo Extremo)
+    google_key = os.getenv("GOOGLE_AI_STUDIO_KEY", "")
+    if google_key:
+        print(f"[Router] Escena {idx}: intentando Google AI Studio...")
         path = await loop.run_in_executor(
             None, _google_veo_3_engine, positive_prompt, character_seed, idx, job_id
         )
         if path:
-            path = _apply_upscale(path, upscaler, fast_mode)
-            _image_cache[cache_key] = path
-            return idx, path
+            from image_processor import validate_image
+            if validate_image(path):
+                path = _apply_upscale(path, upscaler, fast_mode)
+                _image_cache[cache_key] = path
+                print(f"[Router] Escena {idx}: OK via Google AI Studio")
+                return idx, path
 
-    # --- FAST MODE: Seedance 2.0 (Optimizado para 30s) ---
-    if fast_mode:
+    # PRIORIDAD 3: Fal.ai FLUX (Recomendado)
+    fal_key = os.getenv("FAL_KEY", "")
+    if fal_key:
+        print(f"[Router] Escena {idx}: intentando Fal.ai...")
         path = await loop.run_in_executor(
-            None, _seedance_2_fast_engine, positive_prompt, character_seed, idx, job_id
+            None, _fal_ai_flux, positive_prompt, character_seed, idx, job_id, fal_key
         )
         if path:
-            _image_cache[cache_key] = path
-            return idx, path
+            from image_processor import validate_image
+            if validate_image(path):
+                path = _apply_upscale(path, upscaler, fast_mode)
+                _image_cache[cache_key] = path
+                print(f"[Router] Escena {idx}: OK via Fal.ai")
+                return idx, path
 
-    # --- FALLBACK / CINEMATIC MODE ---
-    # 1. Replicate (Flux Dev)
-    replicate_key = os.getenv("REPLICATE_API_KEY", "")
-    if replicate_key and not fast_mode:
-        path = await loop.run_in_executor(
-            None, _replicate_flux_dev, positive_prompt, prompt_data.get("negative", ""), character_seed, idx, job_id
-        )
-        if path:
-            path = _apply_upscale(path, upscaler, fast_mode)
-            _image_cache[cache_key] = path
-            return idx, path
-
-    # 2. HF
+    # PRIORIDAD 4: HuggingFace (si tiene token)
     hf_token = os.getenv("HF_TOKEN", "")
-    if hf_token and not fast_mode:
+    if hf_token:
+        print(f"[Router] Escena {idx}: intentando HuggingFace...")
         path = await loop.run_in_executor(
             None, _huggingface_flux_dev, positive_prompt, character_seed, idx, job_id, hf_token
         )
         if path:
-            path = _apply_upscale(path, upscaler, fast_mode)
-            _image_cache[cache_key] = path
-            return idx, path
+            from image_processor import validate_image
+            if validate_image(path):
+                path = _apply_upscale(path, upscaler, fast_mode)
+                _image_cache[cache_key] = path
+                print(f"[Router] Escena {idx}: OK via HuggingFace")
+                return idx, path
 
-    # 3. Pollinations Cinematic (Standard Elite)
-    path = await loop.run_in_executor(
-        None, _pollinations_cinematic, positive_prompt, character_seed, idx, job_id
-    )
-    if path:
-        path = _apply_upscale(path, upscaler, fast_mode)
-        _image_cache[cache_key] = path
-        return idx, path
+    # PRIORIDAD 5: Pollinations FLUX (Último Fallback Gratuito)
+    print(f"[Router] Escena {idx}: intentando Pollinations FLUX (Último recurso)...")
+    for attempt in range(3):
+        # En el tercer intento, simplificar el prompt
+        prompt_to_use = positive_prompt if attempt < 2 else keyword + ", cinematic, photorealistic, 9:16 vertical"
+        
+        p = await loop.run_in_executor(
+            None, _pollinations_cinematic, prompt_to_use, character_seed + attempt * 111, idx, job_id
+        )
+        if p:
+            from image_processor import validate_image
+            if validate_image(p):
+                p = _apply_upscale(p, upscaler, fast_mode)
+                _image_cache[cache_key] = p
+                print(f"[Router] Escena {idx}: OK via Pollinations (intento {attempt+1})")
+                return idx, p
+        
+        if attempt < 2:
+            print(f"[Router] Pollinations intento {attempt+1} fallo, reintentando...")
+            await asyncio.sleep(2)
 
-    # 4. Fallback
-    return idx, _dark_cinematic_placeholder(keyword, idx, job_id, fast_mode)
+
+    # ERROR CRÍTICO: Ningún proveedor devolvió imagen real válida
+    print(f"[Router] FATAL: TODOS los proveedores fallaron para escena {idx}.")
+    # NO devolvemos placeholder aquí para que fetch_media lance error real
+    return idx, None
+
 
 
 # ─────────────────────────────────────────────
@@ -206,28 +298,57 @@ async def _get_image_cinematic(
 
 def _google_veo_3_engine(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
     """
-    Wrapper para Google Veo 3 - Realismo Extremo.
-    Layer 2: Media-Generation-Service isolation.
+    Wrapper para Google AI Studio Imagen 3.
     """
     from services.google_ai_studio import generate_veo_3_image
-    print(f"[Google Veo 3] 🚀 Ejecutando integración Layer 2 para escena {idx}...")
-    
-    # Intentar generación real vía Google AI Studio
+    print(f"[Google AI Studio] Intentando Imagen 3 para escena {idx}...")
+
     image_bytes = generate_veo_3_image(prompt, seed)
     if image_bytes:
         out = f"outputs/media/{job_id}/img_{idx}.jpg"
         with open(out, "wb") as f:
             f.write(image_bytes)
         return out
+    return None
 
-    # Fallback si no hay API Key o falla la conexión
-    print(f"[Google Veo 3] ℹ️ Fallback a Cinematic Engine para escena {idx}...")
-    elite_prompt = f"Google Veo 3, ultra-photorealistic RAW photography, realistic textures: {prompt}"
-    return _pollinations_cinematic(elite_prompt, seed, idx, job_id)
+def _fal_ai_flux(prompt: str, seed: int, idx: int, job_id: str, api_key: str) -> str | None:
+    """
+    Wrapper para Fal.ai FLUX.
+    """
+    try:
+        url = "https://fal.run/fal-ai/flux/schnell"
+        headers = {
+            "Authorization": f"Key {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "prompt": prompt,
+            "image_size": "portrait_4_3", # Fal suele usar portrait_4_3 o custom
+            "num_inference_steps": 4,
+            "seed": seed
+        }
+        r = requests.post(url, headers=headers, json=payload, timeout=60)
+        
+        if r.status_code == 200:
+            data = r.json()
+            img_url = data.get("images", [{}])[0].get("url")
+            if img_url:
+                rd = requests.get(img_url, timeout=30)
+                if rd.status_code == 200:
+                    out = f"outputs/media/{job_id}/img_{idx}.jpg"
+                    with open(out, "wb") as f:
+                        f.write(rd.content)
+                    return out
+        else:
+            print(f"[Fal.ai] Error HTTP {r.status_code}: {r.text[:500]}")
+    except Exception as e:
+        print(f"[Fal.ai] Exception: {e}")
+    return None
+
 
 def _seedance_2_fast_engine(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
-    """Wrapper para Seedance 2.0 - Optimizado para velocidad (30s)."""
-    print(f"[Seedance 2.0] ⚡ Generación ultra-rápida para escena {idx}...")
+    """Wrapper para Fast Mode - usa Pollinations Schnell."""
+    print(f"[Fast Engine] Generacion rapida escena {idx}...")
     return _pollinations_schnell(prompt, seed, idx, job_id)
 
 
@@ -250,11 +371,14 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
         )
         r = requests.get(url, timeout=45, allow_redirects=True)
         
-        # Verificar que la respuesta sea realmente una imagen
+        # 3. DETECTAR HTML FALSO / ERRORES
         content_type = r.headers.get("content-type", "")
-        is_image = content_type.startswith("image/") or len(r.content) > 15000
-        
-        if r.status_code == 200 and is_image:
+        if "image" not in content_type:
+            print(f"[Pollinations] Error: Content-Type inválido ({content_type})")
+            _log_response_debug(r, "Pollinations")
+            return None
+
+        if r.status_code == 200 and len(r.content) > 15000:
             try:
                 img = Image.open(io.BytesIO(r.content)).convert("RGB")
                 
@@ -340,45 +464,105 @@ def _huggingface_flux_dev(
     return None
 
 
+def _replicate_http(
+    prompt: str, seed: int, idx: int, job_id: str, api_key: str
+) -> str | None:
+    """
+    Replicate API via HTTP REST puro — sin paquete Python.
+    Usa flux-schnell: mas rapido (3-5s), mas barato, sin NSFW block.
+    Detecta 402 (sin creditos) y retorna None inmediatamente.
+    """
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "Prefer": "wait",  # Espera sincrona hasta 60s
+    }
+    payload = {
+        "version": "black-forest-labs/flux-schnell",
+        "input": {
+            "prompt": prompt[:500],
+            "num_outputs": 1,
+            "aspect_ratio": "9:16",
+            "output_format": "jpg",
+            "output_quality": 90,
+            "seed": int(seed) % (2**32 - 1),
+        },
+    }
+    try:
+        print(f"[Replicate] Escena {idx}: enviando a flux-schnell...")
+        r = requests.post(
+            "https://api.replicate.com/v1/predictions",
+            headers=headers,
+            json=payload,
+            timeout=90,
+        )
+        if r.status_code == 402:
+            print(f"[Replicate] Sin creditos (402) - saltando a siguiente proveedor")
+            return None
+        if r.status_code not in (200, 201):
+            print(f"[Replicate] HTTP {r.status_code}: {r.text[:200]}")
+            _log_response_debug(r, "Replicate (POST)")
+            return None
+
+        prediction = r.json()
+        if "error" in prediction:
+            print(f"[Replicate] API Error: {prediction['error']}")
+            return None
+        status = prediction.get("status", "")
+        output = prediction.get("output")
+
+        # Si 'Prefer: wait' no funciona, hacer polling manual
+        if not output and status not in ("failed", "canceled"):
+            poll_url = prediction.get("urls", {}).get("get", "")
+            if poll_url:
+                import time
+                for _ in range(30):  # Max 90s (30 x 3s)
+                    time.sleep(3)
+                    rp = requests.get(poll_url, headers=headers, timeout=15)
+                    pred = rp.json()
+                    status = pred.get("status", "")
+                    output = pred.get("output")
+                    print(f"[Replicate] Escena {idx} status: {status}")
+                    if status == "succeeded" and output:
+                        break
+                    if status in ("failed", "canceled"):
+                        print(f"[Replicate] Escena {idx} fallida: {pred.get('error', '')}")
+                        return None
+
+        if not output:
+            print(f"[Replicate] Escena {idx}: sin output")
+            return None
+
+        img_url = output[0] if isinstance(output, list) else output
+        print(f"[Replicate] Descargando imagen escena {idx}: {str(img_url)[:80]}")
+        rd = requests.get(str(img_url), timeout=30)
+        if rd.status_code == 200 and len(rd.content) > 5000:
+            img = Image.open(io.BytesIO(rd.content)).convert("RGB")
+            img = _crop_to_tiktok(img, HD_W, HD_H)
+            out = f"outputs/media/{job_id}/img_{idx}.jpg"
+            img.save(out, "JPEG", quality=92)
+            print(f"[Replicate] OK escena {idx} ({len(rd.content)//1024}KB)")
+            return out
+        else:
+            print(f"[Replicate] Descarga fallida: HTTP {rd.status_code}, {len(rd.content)} bytes")
+            return None
+
+    except requests.exceptions.Timeout:
+        print(f"[Replicate] Timeout escena {idx}")
+        return None
+    except Exception as e:
+        print(f"[Replicate] Excepcion escena {idx}: {e}")
+        return None
+
+
 def _replicate_flux_dev(
     prompt: str, negative_prompt: str, seed: int, idx: int, job_id: str
 ) -> str | None:
-    """
-    Replicate API — FLUX Dev, Juggernaut XL, RealvisXL.
-    Requiere REPLICATE_API_KEY en el entorno.
-    """
-    try:
-        import replicate  # pip install replicate
-        replicate_key = os.getenv("REPLICATE_API_KEY", "")
-        client = replicate.Client(api_token=replicate_key)
-
-        output = client.run(
-            "black-forest-labs/flux-dev",
-            input={
-                "prompt": prompt,
-                "width": 576,
-                "height": 1024,
-                "num_inference_steps": 28,
-                "seed": seed,
-                "guidance": 3.5,
-            }
-        )
-        # El output es una URL o FileOutput
-        if output:
-            url = str(output[0]) if isinstance(output, list) else str(output)
-            r = requests.get(url, timeout=20)
-            if r.status_code == 200:
-                img = Image.open(io.BytesIO(r.content)).convert("RGB")
-                img = _crop_to_tiktok(img, HD_W, HD_H)
-                out = f"outputs/media/{job_id}/img_{idx}.jpg"
-                img.save(out, "JPEG", quality=95)
-                print(f"[Replicate FLUX Dev] OK escena {idx}")
-                return out
-    except ImportError:
-        print("[Replicate] Paquete 'replicate' no instalado. Ejecuta: pip install replicate")
-    except Exception as e:
-        print(f"[Replicate] Error: {e}")
-    return None
+    """Wrapper legacy — redirige al nuevo caller HTTP."""
+    key = os.getenv("REPLICATE_API_KEY", "")
+    if not key:
+        return None
+    return _replicate_http(prompt, seed, idx, job_id, key)
 
 
 # ─────────────────────────────────────────────

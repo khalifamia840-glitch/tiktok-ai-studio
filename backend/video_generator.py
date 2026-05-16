@@ -182,6 +182,37 @@ async def generate_video(
                     "error_message": str(exc),
                 }
 
+    # --- VALIDACIÓN ESTRICTA PRE-ENSAMBLADO: No permitir fallos visuales ---
+    valid_paths = []
+    from image_processor import validate_image
+    
+    for i, p in enumerate(media_paths):
+        if not p or not os.path.exists(p):
+            return {
+                "success": False,
+                "job_id": job_id,
+                "error_stage": "media_validation",
+                "error_message": f"CRITICAL: Scene {i} is missing its image asset ({p}). Stopping render."
+            }
+        
+        if "placeholder" in p.lower():
+             return {
+                "success": False,
+                "job_id": job_id,
+                "error_stage": "media_validation",
+                "error_message": f"CRITICAL: Placeholder detected for scene {i}. Strict mode active: no placeholders allowed."
+            }
+            
+        if not validate_image(p):
+             return {
+                "success": False,
+                "job_id": job_id,
+                "error_stage": "media_validation",
+                "error_message": f"CRITICAL: Image for scene {i} ({p}) failed content validation (corrupted, black or too small)."
+            }
+        valid_paths.append(p)
+
+
     # --- Etapa 5: Ensamblar video ---
     if job_id: update_job(job_id, status="running", progress=75, message="🎬 Masterizado: Renderizando física de movimiento y color grading...")
     title: str = script.get("title", topic)

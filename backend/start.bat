@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 chcp 65001 > nul
 echo ========================================
 echo  TikTok AI Video Generator - Backend
@@ -19,4 +20,4 @@ echo.
 echo [*] Servidor iniciado en http://localhost:8000
 echo [*] Documentacion API: http://localhost:8000/docs
 echo.
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000

@@ -267,7 +267,9 @@ def delete_video(filename: str):
         os.remove(filepath)
         return {"message": "Video eliminado"}
     raise HTTPException(status_code=404, detail="Video no encontrado")
-async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False):
+
+
+async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False):
     """Pipeline completo delegado a video_generator.generate_video()"""
     update_job(job_id, status="running", progress=10, message="✍️ Estructurando Narrativa Cinematográfica y Hook Viral...")
     try:

@@ -1,9 +1,13 @@
-﻿@echo off
+@echo off
+cd /d "%~dp0"
 echo ========================================
 echo  TikTok AI Studio - Frontend Server
 echo ========================================
 echo.
-echo [*] Iniciando servidor en http://localhost:5173
+echo [*] Instalando dependencias (por si acaso)...
+call npm install
+echo.
+echo [*] Iniciando servidor de desarrollo...
 echo [*] Abre tu navegador en: http://localhost:5173
 echo.
-python -m http.server 5173
+npm run dev

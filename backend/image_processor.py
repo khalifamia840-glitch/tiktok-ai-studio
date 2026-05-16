@@ -31,24 +31,44 @@ TIKTOK_H = 960
 
 def validate_image(path: str) -> bool:
     """
-    Verifica si un archivo de imagen es válido y legible.
-    Comprobaciones: existe, > 0 bytes, PIL puede abrirla y verificarla.
+    Verifica si un archivo de imagen es válido y real.
+    Comprobaciones: existe, > 15KB, content-type (si fuera URL, pero aquí es local), 
+    y que PIL pueda abrirla/verificarla.
     """
     if not path:
         return False
     if not os.path.exists(path):
         logger.warning("[Validate] No existe: %s", path)
         return False
-    if os.path.getsize(path) < 2000:
-        logger.warning("[Validate] Archivo demasiado pequeño (<2KB): %s", path)
+    
+    # 1. Tamaño mínimo (15KB) para evitar miniaturas corruptas o mini-placeholders
+    size = os.path.getsize(path)
+    if size < 15000:
+        logger.error("[Validate] Archivo demasiado pequeño (%d bytes): %s. Probable fallo de API.", size, path)
         return False
 
     try:
         with Image.open(path) as img:
-            img.verify()  # Comprueba integridad sin decodificar del todo
+            img.verify()  # Comprueba integridad
+            
+            # 2. Re-abrir para comprobaciones de contenido (verify() cierra el file handle)
+            with Image.open(path) as img2:
+                # Comprobación de dimensiones (mínimo 512px)
+                if img2.width < 512 or img2.height < 512:
+                    logger.error("[Validate] Resolución insuficiente: %dx%d - %s", img2.width, img2.height, path)
+                    return False
+                
+                # 3. Detección de imágenes negras (Brightness)
+                from PIL import ImageStat
+                stat = ImageStat.Stat(img2.convert("L"))
+                brightness = stat.mean[0]
+                if brightness < 5:
+                    logger.error("[Validate] Imagen negra detectada (brightness: %.2f) - %s", brightness, path)
+                    return False
+
         return True
     except Exception as e:
-        logger.warning("[Validate] Imagen corrupta %s: %s", path, e)
+        logger.error("[Validate] Imagen corrupta o inválida %s: %s", path, e)
         return False
 
 
@@ -138,14 +158,14 @@ def normalize_image(
 
         # Verificar que el archivo guardado es válido
         if validate_image(output_path):
-            logger.info("[Normalize] ✅ OK: %s (%dKB)", output_path, os.path.getsize(output_path) // 1024)
+            logger.info("[Normalize] OK: %s (%dKB)", output_path, os.path.getsize(output_path) // 1024)
             return output_path
         else:
-            logger.error("[Normalize] ❌ El archivo guardado no pasó validación: %s", output_path)
+            logger.error("[Normalize] Error: El archivo guardado no pasó validación: %s", output_path)
             return None
 
     except Exception as e:
-        logger.error("[Normalize] ❌ Error procesando %s: %s", source_path, e)
+        logger.error("[Normalize] Error procesando %s: %s", source_path, e)
         return None
 
 
@@ -254,29 +274,33 @@ def normalize_batch(
             if img_hash:
                 seen_hashes.add(img_hash)
 
-            # Intento de normalización con retry
+            # Intento de normalización con retry (BUG FIX: normalize_image dentro del loop)
             for attempt in range(max_retries + 1):
                 if not validate_image(src):
+                    logger.warning(
+                        "[Batch] Escena %d/%d: imagen fuente inválida antes de normalizar (intento %d/%d)",
+                        idx + 1, len(source_paths), attempt + 1, max_retries + 1
+                    )
                     break
 
-            result = normalize_image(src, out_path)
-            if result and validate_image(result):
-                results.append(result)
-                success = True
-                logger.info(
-                    "[Batch] ✅ Escena %d/%d OK (intento %d)",
-                    idx + 1, len(source_paths), attempt + 1
-                )
-                break
-            else:
-                logger.warning(
-                    "[Batch] Escena %d/%d falló normalización (intento %d/%d)",
-                    idx + 1, len(source_paths), attempt + 1, max_retries + 1
-                )
+                result = normalize_image(src, out_path)
+                if result and validate_image(result):
+                    results.append(result)
+                    success = True
+                    logger.info(
+                        "[Batch] Escena %d/%d OK (intento %d)",
+                        idx + 1, len(source_paths), attempt + 1
+                    )
+                    break
+                else:
+                    logger.warning(
+                        "[Batch] Escena %d/%d falló normalización (intento %d/%d)",
+                        idx + 1, len(source_paths), attempt + 1, max_retries + 1
+                    )
 
         if not success:
             logger.error(
-                "[Batch] ❌ Escena %d/%d: usando fallback cinematográfico",
+                "[Batch] Escena %d/%d: usando fallback cinematográfico",
                 idx + 1, len(source_paths)
             )
             fallback_path = os.path.join(output_dir, f"fallback_{idx:03d}.jpg")

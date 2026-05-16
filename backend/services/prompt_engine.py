@@ -172,7 +172,9 @@ NEGATIVE_PROMPT = (
     "overexposed, underexposed, cartoon, 3d render, painting, sketch, drawing, "
     "illustration, vector, digital art, cg, anime, comic, saturated colors, "
     "artificial, plastic, doll, unrealistic proportions, bad lighting, "
-    "3d render, unreal engine, octane render, stylized, airbrushed, smooth skin"
+    "3d render, unreal engine, octane render, stylized, airbrushed, smooth skin, "
+    "anime, manga, cartoonish, 2d, illustration, drawing, painting, watercolor, "
+    "CGI, vfx, fake, synthetic, stylized, un-photographic, flat colors"
 )
 
 
@@ -252,14 +254,16 @@ def build_cinematic_prompt(
     if visual_style == "realistic":
         # Bypass tags para realismo puro (algunos modelos se confunden con brackets)
         positive_prompt = (
-            f"RAW PHOTO, ultra-realistic photography, {shot_type}, in a {atmosphere}, {camera_movement}, {lighting}, "
-            f"{character_part}{action}{image_keyword}, shot on 35mm Fuji film, realistic skin texture, pores, "
-            f"natural colors, 8k, highly detailed, professional photography, NO DRAWING, NO ART, NO CGI"
+            f"A REAL PHOTOGRAPH, captured on 35mm Fujifilm, ultra-realistic photography. "
+            f"SUBJECT: {character_part}{action}{image_keyword}. "
+            f"SCENE: {shot_type}, in a {atmosphere}, {camera_movement}, {lighting}. "
+            f"DETAILS: realistic skin texture, pores, natural colors, 8k, highly detailed, professional photography. "
+            f"ABSOLUTELY NO DRAWING, NO ANIME, NO 3D RENDER, NO CGI."
         )
     else:
         # Estilo cinematográfico estructurado para el resto
         positive_prompt = (
-            f"HYPER-PHOTOREALISTIC CINEMATIC STILL, masterpiece quality, National Geographic style, shot on 35mm film, Canon EOS R5: "
+            f"LIVE ACTION CINEMATIC PHOTOGRAPH, actual camera footage, shot on Canon EOS R5. "
             f"[TOMA: {shot_type}], "
             f"[ENTORNO: in a {atmosphere}], "
             f"[MOVIMIENTO: {camera_movement}], "
@@ -267,7 +271,7 @@ def build_cinematic_prompt(
             f"[ACCIÓN: {character_part}{action}{image_keyword}], "
             f"9:16 vertical TikTok ratio, {style_suffix}, "
             f"hyper-realistic textures, intricate details, 8k, professional color grading, "
-            f"ultra-sharp focus, filmic atmosphere, no text, no watermark"
+            f"ultra-sharp focus, filmic atmosphere. ABSOLUTELY NO ILLUSTRATION, NO 3D, NO CARTOON."
         )
 
     print(f"\n--- PROMPT GENERATED (Scene {scene_index}) ---")
