@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """Musica de fondo automatica segun el tema del video."""
 import os, asyncio
 import aiohttp
@@ -6,15 +6,16 @@ import aiohttp
 MUSIC_DIR = "outputs/music"
 
 # Tracks de SoundHelix - libres de derechos, siempre disponibles
+# Tracks de SoundHelix & Pixabay - Estilos Virales 2026
 MOOD_TRACKS = {
-    "energetic":    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    "motivational": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-    "cinematic":    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-    "ambient":      "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    "energetic":    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", # Phonk placeholder
+    "motivational": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", # Cinematic placeholder
+    "cinematic":    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", 
+    "ambient":      "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", # Lo-Fi placeholder
     "corporate":    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
     "happy":        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
     "electronic":   "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
-    "inspirational":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+    "inspirational":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3",
 }
 
 MOOD_MAP = {

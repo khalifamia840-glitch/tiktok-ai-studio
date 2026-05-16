@@ -59,18 +59,18 @@ def _get_font(size: int):
 
 def _make_subtitle_clip(text: str, start: float, end: float, total: float):
     """
-    Genera un clip de subtitulo usando PIL (sin ImageMagick).
-
-    - Fondo semitransparente negro con alpha 160.
-    - Texto blanco (255, 255, 255) con sombra negra de 2 px.
-    - Posicion vertical al 75 % desde arriba.
-    - Wrapping con padding de 40 px (max ancho de linea = W - 40).
-    - end se clampea a total.
+    Genera un clip de subtitulo ELITE (Estilo Hormozi / Viral).
+    - Texto en negrita, grande.
+    - Contorno negro grueso (4px).
+    - Resaltado aleatorio en Amarillo o Cian.
     """
-    font = _get_font(32)
-    max_text_width = W - 40  # Req 6.2: frame width minus 40 px padding
+    font = _get_font(48)  # Más grande para impacto
+    max_text_width = W - 60
 
-    # Dividir texto en lineas respetando el ancho maximo
+    # Lógica de resaltado (Hormozi Style)
+    import random
+    highlight_colors = [(255, 255, 0, 255), (0, 255, 255, 255)] # Amarillo y Cian
+    
     words = text.split()
     lines: list[str] = []
     current = ""
@@ -81,7 +81,7 @@ def _make_subtitle_clip(text: str, start: float, end: float, total: float):
             bbox = ImageDraw.Draw(tmp).textbbox((0, 0), test, font=font)
             tw = bbox[2] - bbox[0]
         except Exception:
-            tw = len(test) * 16
+            tw = len(test) * 24
         if tw > max_text_width and current:
             lines.append(current)
             current = word
@@ -90,29 +90,38 @@ def _make_subtitle_clip(text: str, start: float, end: float, total: float):
     if current:
         lines.append(current)
 
-    line_h = 40
-    pad = 10
+    line_h = 60
+    pad = 20
     total_h = len(lines) * line_h + pad * 2
 
-    # Fondo semitransparente: alpha 160 (Req 6.3)
-    bg = Image.new("RGBA", (W, total_h), (0, 0, 0, 160))
+    # Canvas transparente para el subtítulo
+    bg = Image.new("RGBA", (W, total_h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(bg)
 
     for i, line in enumerate(lines):
         y = pad + i * line_h
-        # Sombra negra desplazada 2 px (Req 6.4)
-        draw.text((W // 2 + 2, y + 2), line, font=font, fill=(0, 0, 0, 255), anchor="mt")
-        # Texto blanco (Req 6.4)
-        draw.text((W // 2, y), line, font=font, fill=(255, 255, 255, 255), anchor="mt")
+        # Elegir color (80% blanco, 20% resaltado)
+        main_color = (255, 255, 255, 255)
+        if random.random() > 0.8:
+            main_color = random.choice(highlight_colors)
+
+        # Stroke/Contorno grueso (Req Elite)
+        stroke_w = 4
+        for dx in range(-stroke_w, stroke_w + 1):
+            for dy in range(-stroke_w, stroke_w + 1):
+                if dx*dx + dy*dy <= stroke_w*stroke_w:
+                    draw.text((W // 2 + dx, y + dy), line, font=font, fill=(0, 0, 0, 255), anchor="mt")
+        
+        # Texto principal
+        draw.text((W // 2, y), line, font=font, fill=main_color, anchor="mt")
 
     arr = np.array(bg)
-    # Clampear end a total (Req 6.5)
     clamped_end = min(end, total)
     clip = (
         ImageClip(arr, ismask=False)
         .set_start(start)
         .set_end(clamped_end)
-        .set_position(("center", int(H * 0.75)))  # 75 % desde arriba (Req 5.6)
+        .set_position(("center", int(H * 0.70))) # Un poco más arriba para evitar el HUD de TikTok
     )
     return clip
 
