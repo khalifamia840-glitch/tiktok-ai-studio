@@ -93,6 +93,18 @@ def increment_videos(user_id: int):
     conn.close()
 
 
+def authenticate_biometric(biometric_id: str) -> dict:
+    """Simulación de autenticación WebAuthn/Passkeys."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    # En producción 2026, buscaríamos por public_key_id
+    user = conn.execute("SELECT * FROM users ORDER BY created_at ASC LIMIT 1").fetchone()
+    conn.close()
+    if not user:
+        raise ValueError("No hay usuarios registrados para biometría")
+    return _row_to_dict(user)
+
+
 def _row_to_dict(row) -> dict:
     # id=0, name=1, apellido=2, edad=3, email=4, password_hash=5, plan=6, created_at=7, videos_created=8
     return {

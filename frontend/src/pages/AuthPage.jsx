@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Video, Mail, Lock, User, Calendar, Loader2, AlertCircle } from 'lucide-react'
-import { login as apiLogin, register as apiRegister } from '../api'
+import { login as apiLogin, register as apiRegister, biometricLogin as apiBiometricLogin } from '../api'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function AuthPage() {
@@ -167,7 +167,18 @@ export default function AuthPage() {
               
               <button 
                 type="button"
-                onClick={() => alert("Simulación WebAuthn: Autenticando con FaceID/TouchID...")}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const res = await apiBiometricLogin();
+                    login(res.token, res.user);
+                    navigate('/');
+                  } catch (err) {
+                    setError("Error en autenticación biométrica");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
                 className="w-full py-3 flex items-center justify-center gap-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all group"
               >
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#25f4ee] to-[#fe2c55] group-hover:scale-110 transition-transform">

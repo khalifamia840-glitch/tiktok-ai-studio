@@ -40,6 +40,9 @@ export const login = (email, password) =>
 export const register = (data) => 
   api.post('/api/auth/register', data).then(r => r.data)
 
+export const biometricLogin = () =>
+  api.post('/api/auth/biometric', {}).then(r => r.data)
+
 // --- VIDEO GENERATION ---
 export const generateVideo = (data) =>
   api.post('/api/generate', data).then(r => r.data)

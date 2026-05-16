@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "framework": "vite",
+  "name": "tiktok-ai-studio",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.pollinations.ai; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.render.com https://*.pollinations.ai https://*.cloudinary.com;" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://tiktok-ai-studio.onrender.com/api/$1" },
+    { "source": "/outputs/(.*)", "destination": "https://tiktok-ai-studio.onrender.com/outputs/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

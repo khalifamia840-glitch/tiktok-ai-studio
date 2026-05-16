@@ -53,6 +53,19 @@ class VideoRequest(BaseModel):
     upscaler: str = "pil"            # pil | realesrgan
 
 
+@app.post("/api/auth/biometric")
+def auth_biometric(req: dict):
+    try:
+        # En producción recibiríamos el desafío WebAuthn firmado
+        user = authenticate_biometric("test_id")
+        token = create_token(user["id"])
+        return {"token": token, "user": user}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+# ===== JOB ENDPOINTS =====
+
 # ===== AUTH ENDPOINTS =====
 
 class RegisterRequest(BaseModel):
