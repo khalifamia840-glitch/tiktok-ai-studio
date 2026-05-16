@@ -47,6 +47,9 @@ export const generateVideo = (data) =>
 export const getJobStatus = (jobId) =>
   api.get(`/api/status/${jobId}`).then(r => r.data)
 
+export const getVideoResult = (jobId) =>
+  api.get(`/api/video/${jobId}`).then(r => r.data)
+
 // --- LIBRARY & TRENDING ---
 export const listVideos = () =>
   api.get('/api/videos').then(r => r.data)

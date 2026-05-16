@@ -38,32 +38,9 @@ def upload_video(file_path: str, job_id: str) -> str | None:
         return None
 
 
-def save_to_cloud(job_id: str, video_path: str, script: dict, topic: str) -> dict:
-    """Sube video a Cloudinary y guarda metadatos en DB local.
-    
-    Retorna dict con video_url (Cloudinary si disponible, local como fallback).
-    """
+def save_to_cloud(job_id: str, video_path: str, script: dict = None, topic: str = "") -> dict:
+    """Sube video a Cloudinary y retorna la URL final."""
     cloud_url = upload_video(video_path, job_id)
     video_url = cloud_url if cloud_url else f"/outputs/{os.path.basename(video_path)}"
-
-    try:
-        conn = sqlite3.connect("cloud_storage.db")
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS cloud_videos (
-                id TEXT PRIMARY KEY,
-                topic TEXT,
-                video_url TEXT,
-                script TEXT,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        conn.execute(
-            "INSERT OR REPLACE INTO cloud_videos (id, topic, video_url, script) VALUES (?,?,?,?)",
-            (job_id, topic, video_url, json.dumps(script))
-        )
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"[CloudStorage] DB error: {e}")
 
     return {"video_url": video_url, "job_id": job_id}

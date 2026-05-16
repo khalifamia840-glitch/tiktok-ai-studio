@@ -37,7 +37,7 @@ app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # Inicializar DB al arranque
 from jobs_db import init_jobs_db
-init_jobs_db()
+init_jobs_db(reset_running=True)
 
 
 class VideoRequest(BaseModel):
@@ -132,10 +132,24 @@ def get_status(job_id: str):
         return {
             "status": "error",
             "progress": 0,
-            "message": "ID de video no encontrado o sesión expirada.",
+            "message": "El servidor se ha reiniciado y el estado del video se ha perdido. Por favor, inicia una nueva generación.",
             "video_url": None
         }
     return job
+
+
+@app.get("/api/video/{job_id}")
+def get_video(job_id: str):
+    """Retorna la URL del video de forma persistente desde la DB."""
+    job = get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    return {
+        "status": job["status"],
+        "video_url": job["video_url"],
+        "message": job["message"]
+    }
 
 
 @app.get("/api/videos")

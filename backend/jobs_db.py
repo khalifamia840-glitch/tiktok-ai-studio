@@ -8,7 +8,7 @@ from datetime import datetime
 DB_PATH = "jobs.db"
 
 
-def init_jobs_db():
+def init_jobs_db(reset_running=False):
     conn = sqlite3.connect(DB_PATH)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS jobs (
@@ -23,16 +23,16 @@ def init_jobs_db():
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    conn.execute("""
-        UPDATE jobs SET status='failed', message='Generación interrumpida por reinicio del servidor.'
-        WHERE status IN ('running', 'pending')
-    """)
+    if reset_running:
+        conn.execute("""
+            UPDATE jobs SET status='failed', message='Generación interrumpida por reinicio del servidor.'
+            WHERE status IN ('running', 'pending')
+        """)
     conn.commit()
     conn.close()
 
 
 def create_job(job_id: str):
-    init_jobs_db()
     conn = sqlite3.connect(DB_PATH)
     conn.execute("INSERT OR REPLACE INTO jobs (id, status, progress, message) VALUES (?, 'pending', 0, 'Iniciando...')", (job_id,))
     conn.commit()
@@ -40,7 +40,6 @@ def create_job(job_id: str):
 
 
 def update_job(job_id: str, **kwargs):
-    init_jobs_db()
     conn = sqlite3.connect(DB_PATH)
     fields = ", ".join(f"{k}=?" for k in kwargs)
     values = list(kwargs.values()) + [datetime.utcnow().isoformat(), job_id]
@@ -50,7 +49,6 @@ def update_job(job_id: str, **kwargs):
 
 
 def get_job(job_id: str) -> dict | None:
-    init_jobs_db()
     conn = sqlite3.connect(DB_PATH)
     row = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
     conn.close()
@@ -65,7 +63,6 @@ def get_job(job_id: str) -> dict | None:
 
 
 def get_all_jobs(limit: int = 50) -> list:
-    init_jobs_db()
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute("SELECT * FROM jobs ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
     conn.close()
@@ -75,7 +72,6 @@ def get_all_jobs(limit: int = 50) -> list:
 
 def save_video_stats(job_id: str, topic: str, style: str, niche: str, duration: int):
     """Guarda estadisticas para el sistema de aprendizaje."""
-    init_jobs_db()
     conn = sqlite3.connect(DB_PATH)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS video_stats (
