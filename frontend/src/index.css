@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-@layer base {
   :root {
     /* LCH Colors for superior contrast & vibrancy */
     --accent: lch(60% 100 15); /* Vivid TikTok Red-Pink */
