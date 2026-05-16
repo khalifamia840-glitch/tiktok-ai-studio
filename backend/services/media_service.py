@@ -28,6 +28,7 @@ import asyncio
 import requests
 import urllib.parse
 import hashlib
+import random
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 import config
 from services.prompt_engine import build_cinematic_prompt, build_style_prompt_batch
@@ -126,6 +127,8 @@ async def _get_image_cinematic(
 
     positive_prompt = prompt_data.get("positive", keyword)
     character_seed = prompt_data.get("character_seed", idx * 1000)
+    # Añadir aleatoriedad para evitar resultados repetidos si el usuario re-intenta
+    character_seed += random.randint(0, 999999)
 
     # --- Cache key basado en el prompt + indice ---
     cache_key = hashlib.md5(f"{positive_prompt}_{idx}".encode()).hexdigest()[:16]

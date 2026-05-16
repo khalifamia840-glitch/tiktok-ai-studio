@@ -267,6 +267,10 @@ def build_cinematic_prompt(
         f"ultra-sharp focus, filmic atmosphere, no text, no watermark"
     )
 
+    print(f"\n--- PROMPT GENERATED (Scene {scene_index}) ---")
+    print(positive_prompt)
+    print("-------------------------------------------\n")
+
     return {
         "positive": positive_prompt,
         "negative": NEGATIVE_PROMPT,
