@@ -22,10 +22,18 @@ PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY", "")
 # -- Image provider -------------------------------------------------------
 IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "dalle")
 
+# -- Elite AI (2026) ------------------------------------------------------
+GOOGLE_AI_STUDIO_KEY = os.getenv("GOOGLE_AI_STUDIO_KEY", "")
+REPLICATE_API_KEY     = os.getenv("REPLICATE_API_KEY", "")
+HF_TOKEN              = os.getenv("HF_TOKEN", "")
+
+# -- Persistencia y Cache -------------------------------------------------
+CLOUDINARY_URL = os.getenv("CLOUDINARY_URL", "")
+REDIS_URL      = os.getenv("REDIS_URL", "")
+
 # -- Servidor -------------------------------------------------------------
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
-REDIS_URL = os.getenv("REDIS_URL", "")
 
 # -- Video ----------------------------------------------------------------
 VIDEO_W   = 1080
