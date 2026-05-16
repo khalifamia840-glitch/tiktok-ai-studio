@@ -246,19 +246,19 @@ def build_cinematic_prompt(
     action = _detect_action(narration)
 
     # Construir el MASTER PROMPT ELITE v3.0 (5 Dimensiones)
-    # 1. Shot Description
-    # 2. Environment
-    # 3. Camera Movement
-    # 4. Lighting Style
-    # 5. Character Action / Image Keyword
+    # 1. TOMA (Shot Description)
+    # 2. ENTORNO (Environment)
+    # 3. MOVIMIENTO (Camera Movement)
+    # 4. ILUMINACIÓN (Lighting Style)
+    # 5. ACCIÓN (Character Action / Image Keyword)
     
     positive_prompt = (
         f"MASTERPIECE CINEMATIC STILL: "
-        f"[SHOT: {shot_type}], "
-        f"[ENVIRONMENT: in a {atmosphere}], "
-        f"[CAMERA: {camera_movement}], "
-        f"[LIGHTING: {lighting}], "
-        f"[ACTION: {character_part}{action}{image_keyword}], "
+        f"[TOMA: {shot_type}], "
+        f"[ENTORNO: in a {atmosphere}], "
+        f"[MOVIMIENTO: {camera_movement}], "
+        f"[ILUMINACIÓN: {lighting}], "
+        f"[ACCIÓN: {character_part}{action}{image_keyword}], "
         f"9:16 vertical TikTok ratio, {style_suffix}, "
         f"hyper-realistic textures, intricate details, 8k, professional color grading, "
         f"ultra-sharp focus, filmic atmosphere, no text, no watermark"
