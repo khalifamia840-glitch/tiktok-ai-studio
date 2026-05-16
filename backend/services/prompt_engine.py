@@ -169,6 +169,7 @@ NEGATIVE_PROMPT = (
     "ugly face, bad anatomy, distorted eyes, watermark, text, logo, signature, "
     "duplicate, cropped, out of frame, jpeg artifacts, pixelated, grain noise, "
     "overexposed, underexposed, cartoon, 3d render, painting, sketch, drawing, "
+    "illustration, vector, digital art, cg, anime, comic, saturated colors, "
     "artificial, plastic, doll, unrealistic proportions, bad lighting"
 )
 
@@ -253,7 +254,7 @@ def build_cinematic_prompt(
     # 5. ACCIÓN (Character Action / Image Keyword)
     
     positive_prompt = (
-        f"MASTERPIECE CINEMATIC STILL: "
+        f"HYPER-PHOTOREALISTIC CINEMATIC STILL, masterpiece quality, National Geographic style, shot on 35mm film, Canon EOS R5: "
         f"[TOMA: {shot_type}], "
         f"[ENTORNO: in a {atmosphere}], "
         f"[MOVIMIENTO: {camera_movement}], "
