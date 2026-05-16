@@ -58,6 +58,8 @@ export default function LiveStoryboard({ scenes = [], message = "" }) {
             src={getVideoUrl(currentScene)}
             alt="AI Storyboard"
             className="w-full h-full object-cover"
+            loading="eager"
+            fetchpriority="high"
             initial={{ scale: 1 }}
             animate={{ scale: 1.15 }}
             transition={{ duration: 6, ease: "linear" }}

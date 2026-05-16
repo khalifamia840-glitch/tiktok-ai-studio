@@ -25,6 +25,7 @@ IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "dalle")
 # -- Servidor -------------------------------------------------------------
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
+REDIS_URL = os.getenv("REDIS_URL", "")
 
 # -- Video ----------------------------------------------------------------
 VIDEO_W   = 1080

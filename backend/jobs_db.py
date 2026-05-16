@@ -4,6 +4,7 @@ Los jobs sobreviven reinicios del servidor.
 """
 import sqlite3, json, os
 from datetime import datetime
+from redis_service import cache_set, cache_get, cache_delete
 
 DB_PATH = "jobs.db"
 
@@ -38,6 +39,8 @@ def create_job(job_id: str):
     conn.execute("INSERT OR REPLACE INTO jobs (id, status, progress, message) VALUES (?, 'pending', 0, 'Iniciando...')", (job_id,))
     conn.commit()
     conn.close()
+    # Cache inicial
+    cache_set(f"job:{job_id}", {"id": job_id, "status": "pending", "progress": 0, "message": "Iniciando..."})
 
 
 def update_job(job_id: str, **kwargs):
@@ -47,21 +50,35 @@ def update_job(job_id: str, **kwargs):
     conn.execute(f"UPDATE jobs SET {fields}, updated_at=? WHERE id=?", values)
     conn.commit()
     conn.close()
+    
+    # Invalida cache para forzar recarga en el siguiente get
+    cache_delete(f"job:{job_id}")
 
 
 def get_job(job_id: str) -> dict | None:
+    # 1. Intentar obtener de Redis (Latencia minima)
+    cached = cache_get(f"job:{job_id}")
+    if cached:
+        return cached
+
+    # 2. Fallback a SQLite si no esta en cache
     conn = sqlite3.connect(DB_PATH)
     row = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
     conn.close()
     if not row:
         return None
-    return {
+    
+    job_data = {
         "id": row[0], "status": row[1], "progress": row[2],
         "message": row[3], "video_url": row[4],
         "script": json.loads(row[5]) if row[5] else None,
         "scenes": json.loads(row[6]) if row[6] else [],
         "error": row[7], "created_at": row[8]
     }
+    
+    # 3. Guardar en cache para la proxima peticion (Poll persistente)
+    cache_set(f"job:{job_id}", job_data, expire=300) # 5 minutos de cache
+    return job_data
 
 
 def get_all_jobs(limit: int = 50) -> list:
