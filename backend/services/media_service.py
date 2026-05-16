@@ -205,9 +205,23 @@ async def _get_image_cinematic(
 # ─────────────────────────────────────────────
 
 def _google_veo_3_engine(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
-    """Wrapper para Google Veo 3 - Realismo Extremo."""
-    print(f"[Google Veo 3] 🚀 Iniciando render fotorrealista para escena {idx}...")
-    # Forzar prefijo de realismo absoluto para Veo 3
+    """
+    Wrapper para Google Veo 3 - Realismo Extremo.
+    Layer 2: Media-Generation-Service isolation.
+    """
+    from services.google_ai_studio import generate_veo_3_image
+    print(f"[Google Veo 3] 🚀 Ejecutando integración Layer 2 para escena {idx}...")
+    
+    # Intentar generación real vía Google AI Studio
+    image_bytes = generate_veo_3_image(prompt, seed)
+    if image_bytes:
+        out = f"outputs/media/{job_id}/img_{idx}.jpg"
+        with open(out, "wb") as f:
+            f.write(image_bytes)
+        return out
+
+    # Fallback si no hay API Key o falla la conexión
+    print(f"[Google Veo 3] ℹ️ Fallback a Cinematic Engine para escena {idx}...")
     elite_prompt = f"Google Veo 3, ultra-photorealistic RAW photography, realistic textures: {prompt}"
     return _pollinations_cinematic(elite_prompt, seed, idx, job_id)
 
