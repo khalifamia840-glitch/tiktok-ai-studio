@@ -207,8 +207,9 @@ async def _get_image_cinematic(
 def _google_veo_3_engine(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
     """Wrapper para Google Veo 3 - Realismo Extremo."""
     print(f"[Google Veo 3] 🚀 Iniciando render fotorrealista para escena {idx}...")
-    # Por ahora rutea a Pollinations Flux con parámetros de ultra-calidad
-    return _pollinations_cinematic(f"Google Veo 3 high-fidelity style: {prompt}", seed, idx, job_id)
+    # Forzar prefijo de realismo absoluto para Veo 3
+    elite_prompt = f"Google Veo 3, ultra-photorealistic RAW photography, realistic textures: {prompt}"
+    return _pollinations_cinematic(elite_prompt, seed, idx, job_id)
 
 def _seedance_2_fast_engine(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
     """Wrapper para Seedance 2.0 - Optimizado para velocidad (30s)."""
@@ -231,7 +232,7 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
         encoded = urllib.parse.quote(prompt_short)
         url = (
             f"https://image.pollinations.ai/prompt/{encoded}"
-            f"?width=576&height=1024&model=flux&nologo=true&enhance=true&seed={seed}"
+            f"?width=576&height=1024&model=flux&nologo=true&enhance=false&seed={seed}"
         )
         r = requests.get(url, timeout=45, allow_redirects=True)
         
