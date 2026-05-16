@@ -235,18 +235,21 @@ def _build(
         except Exception as exc:
             logger.warning("[Subtitulo] Error al crear clip: %s", exc)
 
-    if not is_premium:
-        try:
-            from moviepy.editor import TextClip
-            watermark = (
-                TextClip("Generado con TikTok AI Studio", font="Arial", fontsize=24, color='white', bg_color='black')
-                .set_position(("center", "bottom"))
-                .set_duration(total)
-                .set_opacity(0.6)
-            )
-            layers.append(watermark)
-        except Exception as exc:
-            logger.warning("[Watermark] No se pudo crear marca de agua: %s", exc)
+    # --- Ethical AI Label & Watermark (PIL based) ---
+    try:
+        # Reutilizar lógica de subtítulos para la marca de agua y etiqueta ética
+        ai_label = _make_subtitle_clip("🤖 AI Generated Content", 0, total, total)
+        # Posicionar la etiqueta ética arriba a la derecha (pequeña)
+        ai_label = ai_label.set_position(("right", "top")).set_opacity(0.5)
+        layers.append(ai_label)
+
+        if not is_premium:
+            studio_label = _make_subtitle_clip("TikTok AI Studio", 0, total, total)
+            studio_label = studio_label.set_position(("center", "bottom")).set_opacity(0.7)
+            layers.append(studio_label)
+            
+    except Exception as exc:
+        logger.warning("[Ethics/Watermark] Error al crear clips estáticos: %s", exc)
 
     final = CompositeVideoClip(layers, size=(W, H)) if len(layers) > 1 else video
 

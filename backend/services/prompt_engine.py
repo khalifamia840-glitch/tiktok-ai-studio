@@ -88,6 +88,20 @@ ATMOSPHERE_MAP: dict[str, str] = {
 }
 
 # ─────────────────────────────────────────────
+# MOVIMIENTOS DE CAMARA (CAMERA MOVEMENTS)
+# ─────────────────────────────────────────────
+
+CAMERA_MOVEMENTS: dict[str, str] = {
+    "epic":        "dramatic slow drone pan, cinematic crane shot, sweeping vista movement",
+    "tense":       "slow push-in, unsettling handheld camera shake, tight tracking shot",
+    "sad":         "static mournful composition, slow zoom-out to emphasize solitude",
+    "motivational":"fast dolly zoom, energetic camera tracking, low angle pan up",
+    "romantic":    "gentle circular camera rotation, soft handheld movement, intimate focus pull",
+    "shocking":    "sudden quick zoom, whip pan, high energy camera shake",
+    "neutral":     "smooth slider movement, clean professional camera work",
+}
+
+# ─────────────────────────────────────────────
 # SHOT TYPES POR POSICION DE ESCENA
 # ─────────────────────────────────────────────
 
@@ -101,33 +115,33 @@ def _get_shot_type(scene_index: int, total_scenes: int, emotion: str) -> str:
 
     if emotion == "epic":
         if progress < 0.2:
-            return "wide establishing shot, drone view"
+            return "extreme wide establishing shot"
         elif progress < 0.5:
-            return "medium cinematic shot"
+            return "low angle cinematic medium shot"
         elif progress < 0.8:
-            return "dynamic action shot"
+            return "dynamic high-angle action shot"
         else:
-            return "epic wide shot, hero pose"
+            return "epic panoramic wide shot"
 
     if emotion == "sad":
         if progress < 0.3:
-            return "wide lonely shot"
+            return "isolated wide shot"
         elif progress < 0.7:
-            return "medium emotional shot"
+            return "intimate medium emotional shot"
         else:
-            return "close-up emotional face, tears"
+            return "extreme close-up on eyes, emotional intensity"
 
     # Default narrative arc
     if progress < 0.15:
         return "wide establishing shot"
     elif progress < 0.35:
-        return "medium shot"
+        return "cinematic medium shot"
     elif progress < 0.6:
-        return "close-up shot"
+        return "intimate close-up shot"
     elif progress < 0.85:
-        return "medium shot"
+        return "medium tracking shot"
     else:
-        return "wide cinematic final shot"
+        return "wide cinematic payoff shot"
 
 
 # ─────────────────────────────────────────────
@@ -175,6 +189,17 @@ def detect_emotion(text: str) -> str:
     return best if scores[best] > 0 else "neutral"
 
 
+def _detect_action(narration: str) -> str:
+    """Detecta acciones físicas simples en la narración."""
+    n = narration.lower()
+    if "caminando" in n or "walking" in n: return "walking forward, "
+    if "corriendo" in n or "running" in n: return "running fast, "
+    if "hablando" in n or "talking" in n: return "talking to camera, "
+    if "mirando" in n or "looking" in n: return "looking into the distance, "
+    if "sonriendo" in n or "smiling" in n: return "smiling warmly, "
+    if "llorando" in n or "crying" in n: return "crying, "
+    return ""
+
 def build_cinematic_prompt(
     image_keyword: str,
     narration: str = "",
@@ -209,17 +234,26 @@ def build_cinematic_prompt(
     # Obtener sufijo de estilo visual
     style_suffix = STYLE_SUFFIXES.get(visual_style, STYLE_SUFFIXES["cinematic"])
 
-    # Construir el core del prompt
     # Si hay un descriptor de personaje, incluirlo para consistencia
     character_part = f"{character_descriptor}, " if character_descriptor else ""
 
+    # Obtener movimiento de camara
+    camera_movement = CAMERA_MOVEMENTS.get(emotion, CAMERA_MOVEMENTS["neutral"])
+
+    # Detectar accion
+    action = _detect_action(narration)
+
+    # Construir el MASTER PROMPT (Shot + Action + Environment + Lighting + Camera)
+    # [Shot Type] + [Image Keyword (Action)] + [Atmosphere (Env)] + [Lighting] + [Movement]
+    
     positive_prompt = (
-        f"{shot_type}, {character_part}{image_keyword}, "
-        f"{lighting}, {atmosphere}, "
-        f"vertical 9:16 portrait format, "
-        f"TikTok video frame, "
-        f"{style_suffix}, "
-        f"no text, no watermark, no logo"
+        f"{shot_type}, {character_part}{action}{image_keyword}, "
+        f"in a {atmosphere}, "
+        f"masterpiece lighting: {lighting}, "
+        f"camera movement: {camera_movement}, "
+        f"vertical 9:16 cinematic framing, "
+        f"8k resolution, highly detailed, {style_suffix}, "
+        f"no text, no watermark"
     )
 
     return {

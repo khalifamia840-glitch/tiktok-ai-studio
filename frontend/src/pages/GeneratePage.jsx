@@ -102,13 +102,23 @@ export default function GeneratePage() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-slide-up">
-      {/* Header */}
-      <div className="text-center md:text-left">
-        <h2 className="text-4xl font-bold font-heading">
-          <span className="tiktok-gradient-text">Genera</span> tu video
-        </h2>
-        <p className="text-gray-400 mt-2">Nuestra IA se encarga del guion, la voz y el montaje</p>
+    <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-10 animate-slide-up">
+      {/* Header - Professional Typography */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
+        <div>
+          <h2 className="text-5xl font-black font-heading tracking-tighter">
+            Studio<span className="text-[#fe2c55]">AI</span>
+          </h2>
+          <p className="text-zinc-500 mt-2 text-sm font-medium">Professional TikTok Generation Engine · Elite v2.6</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => set('advanced', !form.advanced)}
+            className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all"
+          >
+            {form.advanced ? 'View Brief' : 'Advanced Mode'}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -116,119 +126,67 @@ export default function GeneratePage() {
         <form onSubmit={handleSubmit} className="lg:col-span-5 space-y-6">
           <div className="glass-card space-y-5">
             {/* Tema */}
-            <div>
-              <label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
-                <Wand2 size={14} /> Tema o Idea del Video
-              </label>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">
+                  {form.advanced ? 'Story Brief & Context' : 'What is your video about?'}
+                </label>
+                <span className="text-[10px] font-mono text-zinc-600">{form.topic.length}/500</span>
+              </div>
               <textarea
                 value={form.topic}
                 onChange={e => set('topic', e.target.value)}
-                placeholder="Ej: 5 hábitos para ser más productivo en la mañana..."
-                className="input-premium min-h-[120px] resize-none"
+                placeholder="Describe your idea... e.g., A cinematic motivational speech about discipline with urban night views."
+                className="input-premium min-h-[100px] lg:min-h-[140px] resize-none"
                 required
               />
             </div>
 
-            {/* Duración */}
-            <div>
-              <label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
-                Duración Sugerida
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {DURATIONS.map(d => (
-                  <button key={d} type="button"
-                    onClick={() => set('duration', d)}
-                    className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${
-                      form.duration === d
-                        ? 'bg-[#fe2c55] border-[#fe2c55] text-white shadow-lg shadow-[#fe2c55]/20'
-                        : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/10'
-                    }`}
-                  >
-                    {d}s
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Advanced Configuration - Hidden in Brief Mode */}
+            {form.advanced && (
+              <div className="space-y-6 pt-4 border-t border-white/5 animate-slide-up">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Duration</label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {DURATIONS.map(d => (
+                        <button key={d} type="button"
+                          onClick={() => set('duration', d)}
+                          className={`py-2 rounded-lg text-[11px] font-bold border transition-all ${
+                            form.duration === d
+                              ? 'bg-white text-black border-white'
+                              : 'bg-white/5 border-white/5 text-zinc-500 hover:border-white/10'
+                          }`}
+                        >
+                          {d}s
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Tone</label>
+                    <select value={form.style} onChange={e => set('style', e.target.value)} className="input-premium appearance-none pr-10">
+                      {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Estilo */}
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Estilo</label>
-                <div className="relative">
-                  <select
-                    value={form.style}
-                    onChange={e => set('style', e.target.value)}
-                    className="input-premium appearance-none pr-10 py-3"
-                  >
-                    {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Voice Model</label>
+                    <select value={form.voice} onChange={e => set('voice', e.target.value)} className="input-premium appearance-none pr-10">
+                      {VOICES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Niche</label>
+                    <select value={form.niche} onChange={e => set('niche', e.target.value)} className="input-premium appearance-none pr-10">
+                      {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
-              {/* Nicho */}
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nicho</label>
-                <div className="relative">
-                  <select
-                    value={form.niche}
-                    onChange={e => set('niche', e.target.value)}
-                    className="input-premium appearance-none pr-10 py-3"
-                  >
-                    {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Idioma */}
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Idioma</label>
-                <div className="flex bg-white/5 p-1 rounded-xl">
-                  {[['es','ES'],['en','EN']].map(([v,l]) => (
-                    <button key={v} type="button"
-                      onClick={() => set('language', v)}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-                        form.language === v ? 'bg-[#25f4ee] text-black shadow-lg' : 'text-gray-400'
-                      }`}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Voz */}
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Voz</label>
-                <div className="relative">
-                  <select
-                    value={form.voice}
-                    onChange={e => set('voice', e.target.value)}
-                    className="input-premium appearance-none pr-10 py-3"
-                  >
-                    {VOICES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
-                  </select>
-                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                </div>
-              </div>
-            </div>
-
-            {/* Subtítulos */}
-            <label className="flex items-center justify-between p-4 bg-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${form.add_subtitles ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-500'}`}>
-                  <Type size={18} />
-                </div>
-                <span className="text-sm font-semibold">Subtítulos Automáticos</span>
-              </div>
-              <input 
-                type="checkbox" 
-                checked={form.add_subtitles}
-                onChange={e => set('add_subtitles', e.target.checked)}
-                className="w-5 h-5 accent-[#fe2c55]"
-              />
-            </label>
+            )}
 
             {/* Visual Style Selector */}
             <div className="space-y-3">
@@ -333,8 +291,8 @@ export default function GeneratePage() {
         {/* Status Panel & Timelines */}
         <div className="lg:col-span-7">
           <div className="sticky top-8 space-y-6">
-            {status ? (
-              <JobStatus status={status} />
+            {status || jobId ? (
+              <JobStatus status={status} jobId={jobId} />
             ) : (
               <div className="glass-card border-dashed border-white/5 flex flex-col items-center justify-center py-20 text-center space-y-4">
                 <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center text-gray-600">
@@ -356,7 +314,31 @@ export default function GeneratePage() {
   )
 }
 
-function JobStatus({ status }) {
+function JobStatus({ status, jobId }) {
+  // Skeleton State if status is not yet available but jobId exists
+  if (!status && jobId) {
+    return (
+      <div className="glass-card space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-4 w-32 bg-white/5 animate-pulse rounded" />
+            <div className="h-3 w-48 bg-white/5 animate-pulse rounded" />
+          </div>
+          <div className="h-10 w-10 bg-white/5 animate-pulse rounded-lg" />
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-white/5 animate-pulse rounded-lg" />
+              <div className="h-3 w-full bg-white/5 animate-pulse rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (!status) return null
   const isCompleted = status.status === 'completed'
   const isError = status.status === 'error' || status.status === 'failed'
 
