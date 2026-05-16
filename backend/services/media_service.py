@@ -243,6 +243,19 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
         if r.status_code == 200 and is_image:
             try:
                 img = Image.open(io.BytesIO(r.content)).convert("RGB")
+                
+                # --- FILTROS DE POST-PROCESADO ELITE ---
+                # 1. Si es NOIR, forzar Blanco y Negro físico
+                if "black and white" in prompt.lower() or "monochrome" in prompt.lower():
+                    img = img.convert("L").convert("RGB") # Escala de grises pura
+                    print(f"[Post-Process] Forzado Blanco y Negro (Noir) para escena {idx}")
+                
+                # 2. Si es REALISTA, desaturar ligeramente para look analógico
+                elif "photorealistic" in prompt.lower() or "analog" in prompt.lower():
+                    img = ImageEnhance.Color(img).enhance(0.85) # Look menos saturado, más real
+                    img = ImageEnhance.Contrast(img).enhance(1.05)
+                    print(f"[Post-Process] Desaturación analógica para escena {idx}")
+
                 img = _crop_to_tiktok(img, HD_W, HD_H)
                 out = f"outputs/media/{job_id}/img_{idx}.jpg"
                 img.save(out, "JPEG", quality=90)
