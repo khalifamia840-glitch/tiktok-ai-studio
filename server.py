@@ -13,7 +13,7 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
 
 PORT = 5173
 import os
-os.chdir(r"C:\Users\ra\Desktop\tiktok-ai-generator\www")
+os.chdir("www/tiktok-video-generator")
 with socketserver.TCPServer(("", PORT), NoCacheHandler) as httpd:
     print(f"Servidor sin cache en http://localhost:{PORT}")
     httpd.serve_forever()
