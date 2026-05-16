@@ -18,6 +18,7 @@ def init_jobs_db(reset_running=False):
             message TEXT DEFAULT 'Iniciando...',
             video_url TEXT,
             script TEXT,
+            scenes_json TEXT,
             error TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -58,7 +59,8 @@ def get_job(job_id: str) -> dict | None:
         "id": row[0], "status": row[1], "progress": row[2],
         "message": row[3], "video_url": row[4],
         "script": json.loads(row[5]) if row[5] else None,
-        "error": row[6], "created_at": row[7]
+        "scenes": json.loads(row[6]) if row[6] else [],
+        "error": row[7], "created_at": row[8]
     }
 
 

@@ -75,13 +75,34 @@ async def fetch_media(
             for i, kw in enumerate(kws)
         ]
 
-    # Generar en paralelo
-    tasks = [
-        _get_image_cinematic(kws[i], prompt_data_list[i], i, job_id, fast_mode, upscaler)
+    # Generar de forma progresiva para permitir streaming visual
+    from jobs_db import update_job
+    import json
+    
+    paths = [None] * clips_needed
+    scenes_ready = []
+    
+    pending_tasks = [
+        asyncio.create_task(_get_image_cinematic(kws[i], prompt_data_list[i], i, job_id, fast_mode, upscaler))
         for i in range(clips_needed)
     ]
-    paths = await asyncio.gather(*tasks)
-    return list(paths)
+    
+    for completed_task in asyncio.as_completed(pending_tasks):
+        path = await completed_task
+        if path:
+            # Encontrar el indice original (podemos guardar idx en el retorno de _get_image_cinematic si es necesario)
+            # Por simplicidad, asumimos que paths se llena al final, pero las escenas listas se envian ya.
+            filename = os.path.basename(path)
+            # URL relativa para el frontend
+            scene_url = f"/outputs/media/{job_id}/{filename}"
+            scenes_ready.append(scene_url)
+            
+            # Actualizar DB con el storyboard parcial
+            update_job(job_id, scenes_json=json.dumps(scenes_ready))
+
+    # Re-obtener paths ordenados al final
+    final_paths = await asyncio.gather(*pending_tasks)
+    return list(final_paths)
 
 
 # ─────────────────────────────────────────────

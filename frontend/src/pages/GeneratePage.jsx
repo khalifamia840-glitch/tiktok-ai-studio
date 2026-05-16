@@ -4,6 +4,7 @@ import { Sparkles, Loader2, Download, CheckCircle, AlertCircle, ChevronDown, Wan
 import { generateVideo, getJobStatus, getVideoUrl } from '../api'
 import Timeline from '../components/Timeline'
 import RetentionScore from '../components/RetentionScore'
+import LiveStoryboard from '../components/LiveStoryboard'
 
 const STYLES = ['entretenido','educativo','motivacional','humor','misterio','viral','informativo','storytelling']
 const NICHES = ['general','fitness','tecnologia','negocios','humor','educacion','lifestyle','salud','viajes','cocina','dinero','relaciones']
@@ -382,29 +383,37 @@ function JobStatus({ status, jobId }) {
         ))}
       </div>
 
-      {/* Resultado */}
-      {isCompleted && status.video_url && (
-        <div className="space-y-4 animate-slide-up pt-4 border-t border-white/5">
-          <video
-            src={getVideoUrl(status.video_url)}
-            controls
-            playsInline
-            className="w-full max-w-[320px] mx-auto rounded-2xl bg-black shadow-2xl"
-          />
-          <a
-            href={getVideoUrl(status.video_url)}
-            download
-            className="btn-premium w-full !bg-green-600 hover:!bg-green-500 shadow-lg shadow-green-600/20"
-          >
-            <Download size={18} /> Descargar MP4
-          </a>
-          {status.script && (
-            <div className="p-4 bg-white/5 rounded-2xl space-y-2 border border-white/5">
-              <p className="text-xs font-bold text-[#25f4ee] uppercase tracking-widest">Script Generado</p>
-              <p className="text-sm font-bold text-white">{status.script.title}</p>
-              <p className="text-xs text-gray-400 leading-relaxed italic">"{status.script.narration}"</p>
-            </div>
-          )}
+      {/* Preview Section: Cinematic Live Storyboard or Final Video */}
+      <div className="relative">
+        {isCompleted && status.video_url ? (
+          <div className="space-y-4 animate-slide-up pt-4 border-t border-white/5">
+            <video
+              src={getVideoUrl(status.video_url)}
+              controls
+              playsInline
+              className="w-full max-w-[320px] mx-auto rounded-3xl bg-black shadow-2xl border border-white/10"
+            />
+            <a
+              href={getVideoUrl(status.video_url)}
+              download
+              className="btn-premium w-full !bg-green-600 hover:!bg-green-500 shadow-lg shadow-green-600/20"
+            >
+              <Download size={18} /> Descargar MP4
+            </a>
+          </div>
+        ) : (
+          <div className="animate-slide-up">
+            <LiveStoryboard scenes={status.scenes || []} message={status.message} />
+          </div>
+        )}
+      </div>
+
+      {/* Script Meta - Only show when ready */}
+      {status.script && isCompleted && (
+        <div className="p-4 bg-white/5 rounded-2xl space-y-2 border border-white/5 animate-slide-up">
+          <p className="text-xs font-bold text-[#25f4ee] uppercase tracking-widest">Script Generado</p>
+          <p className="text-sm font-bold text-white">{status.script.title}</p>
+          <p className="text-xs text-gray-400 leading-relaxed italic">"{status.script.narration}"</p>
         </div>
       )}
 

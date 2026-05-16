@@ -91,7 +91,7 @@ async def generate_video(
         }
 
     # --- Etapa 2 y 3: Generar audio y obtener media EN PARALELO ---
-    if job_id: update_job(job_id, status="running", progress=30, message="🎙️ Generando voz y 🎬 buscando imágenes...")
+    if job_id: update_job(job_id, status="running", progress=30, message="🎙️ Sincronizando voz y 🎬 diseñando escenas cinematográficas...")
     import asyncio
     narration: str = script.get("narration", topic)
     keywords: list[str] = script.get("keywords", [topic])
@@ -151,7 +151,7 @@ async def generate_video(
         media_paths = media_res
 
     # --- Etapa 4: Generar subtitulos (opcional) ---
-    if job_id: update_job(job_id, status="running", progress=60, message="✍️ Creando subtítulos...")
+    if job_id: update_job(job_id, status="running", progress=60, message="✍️ Generando narrativa visual y subtítulos dinámicos...")
     subtitles: list = []
     if add_subtitles:
         # Intentar obtener duracion del audio para sincronizar subtitulos
@@ -183,7 +183,7 @@ async def generate_video(
                 }
 
     # --- Etapa 5: Ensamblar video ---
-    if job_id: update_job(job_id, status="running", progress=75, message="🎬 Ensamblando video final...")
+    if job_id: update_job(job_id, status="running", progress=75, message="🎬 Orquestando montaje final y efectos cinemáticos...")
     title: str = script.get("title", topic)
     segment_durations: list = script.get("segment_durations", [])
     try:
