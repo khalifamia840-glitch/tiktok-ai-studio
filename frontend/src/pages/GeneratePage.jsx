@@ -21,7 +21,8 @@ const VISUAL_STYLES = [
   { value: 'realistic', emoji: '📸', label: 'Realista', desc: 'Ultra HD' },
   { value: 'tiktok_viral', emoji: '✨', label: 'TikTok Viral', desc: 'Alto contraste' },
   { value: 'anime', emoji: '🎌', label: 'Anime', desc: 'Estilo manga' },
-  { value: 'documentary', emoji: '🎥', label: 'Documental', desc: 'Auténtico' },
+  { value: 'kling', emoji: '💎', label: 'Kling Elite', desc: 'Física 4K' },
+  { value: 'veo', emoji: '🌟', label: 'Google Veo', desc: 'Cine Realista' },
 ]
 
 export default function GeneratePage() {

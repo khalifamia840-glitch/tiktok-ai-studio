@@ -156,6 +156,8 @@ STYLE_SUFFIXES: dict[str, str] = {
     "tiktok_viral": "viral TikTok aesthetic, trendy visual style, high saturation, eye-catching composition",
     "documentary":  "documentary photography, journalistic style, authentic, raw, handheld feel",
     "hyperrealistic": "hyper realistic, 8k ultra HD, microscopic detail, perfect anatomy, flawless skin texture",
+    "kling": "Kling AI 2.0 aesthetics, cinematic physical simulation, dynamic lighting, ultra photorealistic, high-end motion blur",
+    "veo": "Google Veo 3 quality, high-fidelity generative video style, realistic fluid physics, professional cinematography, soft light reflections",
 }
 
 # ─────────────────────────────────────────────
