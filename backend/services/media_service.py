@@ -78,9 +78,9 @@ async def fetch_media(
     # Generar de forma progresiva para permitir streaming visual
     from jobs_db import update_job
     import json
+    from cloud_service import upload_image
     
-    paths = [None] * clips_needed
-    scenes_ready = []
+    scenes_ready = {} # Usar dict para mantener el orden por index
     
     pending_tasks = [
         asyncio.create_task(_get_image_cinematic(kws[i], prompt_data_list[i], i, job_id, fast_mode, upscaler))
@@ -88,20 +88,24 @@ async def fetch_media(
     ]
     
     for completed_task in asyncio.as_completed(pending_tasks):
-        path = await completed_task
+        idx, path = await completed_task
         if path:
-            # Encontrar el indice original (podemos guardar idx en el retorno de _get_image_cinematic si es necesario)
-            # Por simplicidad, asumimos que paths se llena al final, pero las escenas listas se envian ya.
-            filename = os.path.basename(path)
-            # URL relativa para el frontend
-            scene_url = f"/outputs/media/{job_id}/{filename}"
-            scenes_ready.append(scene_url)
+            # Subir a la nube inmediatamente para que el frontend pueda verlo
+            cloud_url = upload_image(path, job_id, idx)
+            
+            # Si falla la nube, usar URL estatica relativa (fallback)
+            scene_url = cloud_url if cloud_url else f"/outputs/media/{job_id}/{os.path.basename(path)}"
+            scenes_ready[idx] = scene_url
+            
+            # Ordenar escenas por index para el storyboard
+            sorted_scenes = [scenes_ready[k] for k in sorted(scenes_ready.keys())]
             
             # Actualizar DB con el storyboard parcial
-            update_job(job_id, scenes_json=json.dumps(scenes_ready))
+            update_job(job_id, scenes_json=json.dumps(sorted_scenes))
 
-    # Re-obtener paths ordenados al final
-    final_paths = await asyncio.gather(*pending_tasks)
+    # Re-obtener resultados finales
+    results = await asyncio.gather(*pending_tasks)
+    final_paths = [r[1] for r in results]
     return list(final_paths)
 
 
@@ -116,7 +120,7 @@ async def _get_image_cinematic(
     job_id: str,
     fast_mode: bool,
     upscaler: str,
-) -> str:
+) -> tuple[int, str | None]:
     """Obtiene la mejor imagen posible para la escena con el prompt cinematografico."""
     loop = asyncio.get_event_loop()
 
@@ -124,7 +128,6 @@ async def _get_image_cinematic(
     character_seed = prompt_data.get("character_seed", idx * 1000)
 
     # --- Cache key basado en el prompt + indice ---
-    # Esto evita que escenas con prompts identicos repitan la misma imagen
     cache_key = hashlib.md5(f"{positive_prompt}_{idx}".encode()).hexdigest()[:16]
     if cache_key in _image_cache:
         cached = _image_cache[cache_key]
@@ -132,21 +135,21 @@ async def _get_image_cinematic(
             out = f"outputs/media/{job_id}/img_{idx}.jpg"
             try:
                 import shutil; shutil.copy2(cached, out)
-                return out
+                return idx, out
             except Exception:
                 pass
 
-    # --- FAST MODE: Pollinations Schnell ---
+    # --- FAST MODE ---
     if fast_mode:
         path = await loop.run_in_executor(
             None, _pollinations_schnell, positive_prompt, character_seed, idx, job_id
         )
         if path:
             _image_cache[cache_key] = path
-            return path
+            return idx, path
 
     # --- CINEMATIC MODE ---
-    # 1. Intentar Replicate (máxima calidad, si API key disponible)
+    # 1. Replicate
     replicate_key = os.getenv("REPLICATE_API_KEY", "")
     if replicate_key and not fast_mode:
         path = await loop.run_in_executor(
@@ -155,9 +158,9 @@ async def _get_image_cinematic(
         if path:
             path = _apply_upscale(path, upscaler, fast_mode)
             _image_cache[cache_key] = path
-            return path
+            return idx, path
 
-    # 2. HuggingFace FLUX Dev (gratis con token)
+    # 2. HF
     hf_token = os.getenv("HF_TOKEN", "")
     if hf_token and not fast_mode:
         path = await loop.run_in_executor(
@@ -166,19 +169,19 @@ async def _get_image_cinematic(
         if path:
             path = _apply_upscale(path, upscaler, fast_mode)
             _image_cache[cache_key] = path
-            return path
+            return idx, path
 
-    # 3. Pollinations FLUX Cinematic (gratuito, calidad HD)
+    # 3. Pollinations Cinematic
     path = await loop.run_in_executor(
         None, _pollinations_cinematic, positive_prompt, character_seed, idx, job_id
     )
     if path:
         path = _apply_upscale(path, upscaler, fast_mode)
         _image_cache[cache_key] = path
-        return path
+        return idx, path
 
-    # 4. Fallback cinematografico oscuro
-    return _dark_cinematic_placeholder(keyword, idx, job_id, fast_mode)
+    # 4. Fallback
+    return idx, _dark_cinematic_placeholder(keyword, idx, job_id, fast_mode)
 
 
 # ─────────────────────────────────────────────

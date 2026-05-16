@@ -15,6 +15,13 @@ export default function LiveStoryboard({ scenes = [], message = "" }) {
     return () => clearInterval(timer)
   }, [scenes.length])
 
+  // Saltar a la última escena cuando llega una nueva
+  useEffect(() => {
+    if (scenes.length > 0) {
+      setCurrentIndex(scenes.length - 1)
+    }
+  }, [scenes.length])
+
   // Si no hay escenas aún, mostrar placeholder cinemático de carga
   if (scenes.length === 0) {
     return (

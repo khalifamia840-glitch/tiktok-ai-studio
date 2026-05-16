@@ -80,7 +80,7 @@ export default function GeneratePage() {
       } catch (e) {
         console.error("Polling error:", e)
       }
-    }, 2500)
+    }, 1500)
     return () => clearInterval(pollRef.current)
   }, [jobId])
 

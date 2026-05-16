@@ -38,6 +38,27 @@ def upload_video(file_path: str, job_id: str) -> str | None:
         return None
 
 
+def upload_image(file_path: str, job_id: str, scene_idx: int) -> str | None:
+    """Sube imagen a Cloudinary para el Live Storyboard."""
+    if not all([CLOUD_NAME, API_KEY, API_SECRET]):
+        return None
+    try:
+        import cloudinary
+        import cloudinary.uploader
+        cloudinary.config(cloud_name=CLOUD_NAME, api_key=API_KEY, api_secret=API_SECRET)
+        
+        result = cloudinary.uploader.upload(
+            file_path,
+            resource_type="image",
+            public_id=f"tiktok_studio/{job_id}/scene_{scene_idx}",
+            overwrite=True
+        )
+        return result.get("secure_url")
+    except Exception as e:
+        print(f"[Cloudinary Image] ❌ Error: {e}")
+        return None
+
+
 def save_to_cloud(job_id: str, video_path: str, script: dict = None, topic: str = "") -> dict:
     """Sube video a Cloudinary y retorna la URL final."""
     cloud_url = upload_video(video_path, job_id)
