@@ -149,7 +149,7 @@ def _get_shot_type(scene_index: int, total_scenes: int, emotion: str) -> str:
 # ─────────────────────────────────────────────
 
 STYLE_SUFFIXES: dict[str, str] = {
-    "realistic":    "analog photography, 35mm Fujifilm, realistic skin texture, pores, imperfections, natural lighting, RAW, unedited",
+    "realistic":    "RAW analog photography, 35mm Fujifilm, realistic skin texture, pores, imperfections, ISO 100, natural grain, unedited, authentic look, NO CGI",
     "cinematic":    "movie still from a 35mm film, cinematic grain, natural colors, anamorphic lens, high dynamic range",
     "dark":         "low key lighting, heavy shadows, gritty film look, realistic noir, dark aesthetic",
     "anime":        "anime style, detailed anime illustration, vibrant colors, manga aesthetic, studio ghibli quality",
@@ -249,23 +249,26 @@ def build_cinematic_prompt(
     action = _detect_action(narration)
 
     # Construir el MASTER PROMPT ELITE v3.0 (5 Dimensiones)
-    # 1. TOMA (Shot Description)
-    # 2. ENTORNO (Environment)
-    # 3. MOVIMIENTO (Camera Movement)
-    # 4. ILUMINACIÓN (Lighting Style)
-    # 5. ACCIÓN (Character Action / Image Keyword)
-    
-    positive_prompt = (
-        f"HYPER-PHOTOREALISTIC CINEMATIC STILL, masterpiece quality, National Geographic style, shot on 35mm film, Canon EOS R5: "
-        f"[TOMA: {shot_type}], "
-        f"[ENTORNO: in a {atmosphere}], "
-        f"[MOVIMIENTO: {camera_movement}], "
-        f"[ILUMINACIÓN: {lighting}], "
-        f"[ACCIÓN: {character_part}{action}{image_keyword}], "
-        f"9:16 vertical TikTok ratio, {style_suffix}, "
-        f"hyper-realistic textures, intricate details, 8k, professional color grading, "
-        f"ultra-sharp focus, filmic atmosphere, no text, no watermark"
-    )
+    if visual_style == "realistic":
+        # Bypass tags para realismo puro (algunos modelos se confunden con brackets)
+        positive_prompt = (
+            f"RAW PHOTO, ultra-realistic photography, {shot_type}, in a {atmosphere}, {camera_movement}, {lighting}, "
+            f"{character_part}{action}{image_keyword}, shot on 35mm Fuji film, realistic skin texture, pores, "
+            f"natural colors, 8k, highly detailed, professional photography, NO DRAWING, NO ART, NO CGI"
+        )
+    else:
+        # Estilo cinematográfico estructurado para el resto
+        positive_prompt = (
+            f"HYPER-PHOTOREALISTIC CINEMATIC STILL, masterpiece quality, National Geographic style, shot on 35mm film, Canon EOS R5: "
+            f"[TOMA: {shot_type}], "
+            f"[ENTORNO: in a {atmosphere}], "
+            f"[MOVIMIENTO: {camera_movement}], "
+            f"[ILUMINACIÓN: {lighting}], "
+            f"[ACCIÓN: {character_part}{action}{image_keyword}], "
+            f"9:16 vertical TikTok ratio, {style_suffix}, "
+            f"hyper-realistic textures, intricate details, 8k, professional color grading, "
+            f"ultra-sharp focus, filmic atmosphere, no text, no watermark"
+        )
 
     print(f"\n--- PROMPT GENERATED (Scene {scene_index}) ---")
     print(positive_prompt)
