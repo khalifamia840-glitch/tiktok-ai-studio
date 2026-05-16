@@ -23,6 +23,7 @@ const VISUAL_STYLES = [
   { value: 'anime', emoji: '🎌', label: 'Anime', desc: 'Estilo manga' },
   { value: 'kling', emoji: '💎', label: 'Kling Elite', desc: 'Física 4K' },
   { value: 'veo', emoji: '🌟', label: 'Google Veo', desc: 'Cine Realista' },
+  { value: 'noir', emoji: '🎞️', label: 'Cine Noir', desc: 'Blanco y Negro' },
 ]
 
 export default function GeneratePage() {

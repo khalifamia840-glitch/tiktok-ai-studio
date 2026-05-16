@@ -149,15 +149,16 @@ def _get_shot_type(scene_index: int, total_scenes: int, emotion: str) -> str:
 # ─────────────────────────────────────────────
 
 STYLE_SUFFIXES: dict[str, str] = {
-    "realistic":    "ultra realistic, photorealistic, 8k detail, RAW photo, DSLR quality, sharp focus",
-    "cinematic":    "cinematic color grading, anamorphic lens flare, film grain, movie still, director's cut",
-    "dark":         "dark moody aesthetic, noir style, deep shadows, high contrast, gritty texture, ominous",
+    "realistic":    "analog photography, 35mm Fujifilm, realistic skin texture, pores, imperfections, natural lighting, RAW, unedited",
+    "cinematic":    "movie still from a 35mm film, cinematic grain, natural colors, anamorphic lens, high dynamic range",
+    "dark":         "low key lighting, heavy shadows, gritty film look, realistic noir, dark aesthetic",
     "anime":        "anime style, detailed anime illustration, vibrant colors, manga aesthetic, studio ghibli quality",
     "tiktok_viral": "viral TikTok aesthetic, trendy visual style, high saturation, eye-catching composition",
     "documentary":  "documentary photography, journalistic style, authentic, raw, handheld feel",
     "hyperrealistic": "hyper realistic, 8k ultra HD, microscopic detail, perfect anatomy, flawless skin texture",
     "kling": "Kling AI 2.0 aesthetics, cinematic physical simulation, dynamic lighting, ultra photorealistic, high-end motion blur",
     "veo": "Google Veo 3 quality, high-fidelity generative video style, realistic fluid physics, professional cinematography, soft light reflections",
+    "noir": "black and white photography, high contrast noir, 35mm monochrome film, dramatic shadows, classic cinema look",
 }
 
 # ─────────────────────────────────────────────
@@ -170,7 +171,8 @@ NEGATIVE_PROMPT = (
     "duplicate, cropped, out of frame, jpeg artifacts, pixelated, grain noise, "
     "overexposed, underexposed, cartoon, 3d render, painting, sketch, drawing, "
     "illustration, vector, digital art, cg, anime, comic, saturated colors, "
-    "artificial, plastic, doll, unrealistic proportions, bad lighting"
+    "artificial, plastic, doll, unrealistic proportions, bad lighting, "
+    "3d render, unreal engine, octane render, stylized, airbrushed, smooth skin"
 )
 
 
