@@ -369,7 +369,7 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
             f"https://image.pollinations.ai/prompt/{encoded}"
             f"?width=576&height=1024&model=flux&nologo=true&enhance=false&seed={seed}"
         )
-        r = requests.get(url, timeout=45, allow_redirects=True)
+        r = requests.get(url, timeout=90, allow_redirects=True)
         
         # 3. DETECTAR HTML FALSO / ERRORES
         content_type = r.headers.get("content-type", "")
@@ -415,7 +415,7 @@ def _pollinations_schnell(prompt: str, seed: int, idx: int, job_id: str) -> str 
             f"https://image.pollinations.ai/prompt/{encoded}"
             f"?width=576&height=1024&model=flux-schnell&nologo=true&seed={seed}"
         )
-        r = requests.get(url, timeout=25, allow_redirects=True)
+        r = requests.get(url, timeout=60, allow_redirects=True)
         if r.status_code == 200 and len(r.content) > 5000:
             img = Image.open(io.BytesIO(r.content)).convert("RGB")
             img = _crop_to_tiktok(img, FAST_W, FAST_H)
