@@ -51,6 +51,7 @@ class VideoRequest(BaseModel):
     niche: str = "general"
     visual_style: str = "cinematic"  # realistic | cinematic | dark | anime | tiktok_viral | documentary
     upscaler: str = "pil"            # pil | realesrgan
+    fast_mode: bool = False
 
 
 @app.post("/api/auth/biometric")
@@ -285,6 +286,7 @@ async def run_pipeline(job_id: str, req: VideoRequest, is_premium: bool = False)
             is_premium=is_premium,
             visual_style=req.visual_style,
             upscaler=req.upscaler,
+            fast_mode=req.fast_mode,
             # Pasar callback de progreso si se implementa en video_generator
             job_id=job_id 
         )

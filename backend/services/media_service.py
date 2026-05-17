@@ -373,7 +373,13 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
             f"https://image.pollinations.ai/prompt/{encoded}"
             f"?width=576&height=1024&model=flux&nologo=true&enhance=false&seed={seed}"
         )
-        r = requests.get(url, timeout=90, allow_redirects=True)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
+            "Referer": "https://pollinations.ai/",
+        }
+        r = requests.get(url, headers=headers, timeout=90, allow_redirects=True)
         
         # 3. DETECTAR HTML FALSO / ERRORES
         content_type = r.headers.get("content-type", "")
@@ -419,7 +425,13 @@ def _pollinations_schnell(prompt: str, seed: int, idx: int, job_id: str) -> str 
             f"https://image.pollinations.ai/prompt/{encoded}"
             f"?width=576&height=1024&model=flux-schnell&nologo=true&seed={seed}"
         )
-        r = requests.get(url, timeout=60, allow_redirects=True)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
+            "Referer": "https://pollinations.ai/",
+        }
+        r = requests.get(url, headers=headers, timeout=60, allow_redirects=True)
         if r.status_code == 200 and len(r.content) > 5000:
             img = Image.open(io.BytesIO(r.content)).convert("RGB")
             img = _crop_to_tiktok(img, FAST_W, FAST_H)
