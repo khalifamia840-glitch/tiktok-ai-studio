@@ -269,24 +269,30 @@ async def _get_image_cinematic(
     # PRIORIDAD 5: Pollinations FLUX (Último Fallback Gratuito)
     print(f"[Router] Escena {idx}: intentando Pollinations FLUX (Último recurso)...")
     async with _pollinations_semaphore:
+        if idx > 0:
+            print(f"[Router] Esperando 4s antes de Pollinations para escena {idx} (evitando HTTP 429 de Cloudflare)...")
+            await asyncio.sleep(4)
+
+        models = ["flux", "turbo", "sana"]
         for attempt in range(3):
-            # En el tercer intento, simplificar el prompt
+            model_to_use = models[attempt]
             prompt_to_use = positive_prompt if attempt < 2 else keyword + ", cinematic, photorealistic, 9:16 vertical"
             
             p = await loop.run_in_executor(
-                None, _pollinations_cinematic, prompt_to_use, character_seed + attempt * 111, idx, job_id
+                None, _pollinations_cinematic, prompt_to_use, character_seed + attempt * 111, idx, job_id, model_to_use
             )
             if p:
                 from image_processor import validate_image
                 if validate_image(p):
                     p = _apply_upscale(p, upscaler, fast_mode)
                     _image_cache[cache_key] = p
-                    print(f"[Router] Escena {idx}: OK via Pollinations (intento {attempt+1})")
+                    print(f"[Router] Escena {idx}: OK via Pollinations {model_to_use} (intento {attempt+1})")
                     return idx, p
             
             if attempt < 2:
-                print(f"[Router] Pollinations intento {attempt+1} fallo, reintentando...")
-                await asyncio.sleep(2)
+                delay = 5 if attempt == 0 else 10
+                print(f"[Router] Pollinations intento {attempt+1} fallo para escena {idx}, esperando {delay}s...")
+                await asyncio.sleep(delay)
 
 
     # ERROR CRÍTICO: Ningún proveedor devolvió imagen real válida
@@ -360,9 +366,9 @@ def _seedance_2_fast_engine(prompt: str, seed: int, idx: int, job_id: str) -> st
 # PROVEEDORES DE IMAGEN
 # ─────────────────────────────────────────────
 
-def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> str | None:
+def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str, model_name: str = "flux") -> str | None:
     """
-    Pollinations.ai con FLUX — Gratis, sin API key.
+    Pollinations.ai con FLUX/Turbo/Sana — Gratis, sin API key.
     Usa 1 sola variante para evitar timeouts de 120s.
     """
     try:
@@ -371,7 +377,7 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
         encoded = urllib.parse.quote(prompt_short)
         url = (
             f"https://image.pollinations.ai/prompt/{encoded}"
-            f"?width=576&height=1024&model=flux&nologo=true&enhance=false&seed={seed}"
+            f"?width=576&height=1024&model={model_name}&nologo=true&enhance=false&seed={seed}"
         )
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
