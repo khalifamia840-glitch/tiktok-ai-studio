@@ -35,6 +35,7 @@ from services.prompt_engine import build_cinematic_prompt, build_style_prompt_ba
 
 # Cache en memoria
 _image_cache: dict = {}
+_pollinations_semaphore = asyncio.Semaphore(1)
 
 # Resoluciones
 FAST_W, FAST_H = 540, 960
@@ -175,9 +176,10 @@ async def _get_image_cinematic(
 
     # ─── FAST MODE ────────────────────────────────────────────────────
     if fast_mode:
-        path = await loop.run_in_executor(
-            None, _pollinations_schnell, positive_prompt, character_seed, idx, job_id
-        )
+        async with _pollinations_semaphore:
+            path = await loop.run_in_executor(
+                None, _pollinations_schnell, positive_prompt, character_seed, idx, job_id
+            )
         if path:
             from image_processor import validate_image
             if validate_image(path):
@@ -185,9 +187,10 @@ async def _get_image_cinematic(
                 return idx, path
         
         # Si schnell falla en fast mode, intentar cinematic (último recurso)
-        path = await loop.run_in_executor(
-            None, _pollinations_cinematic, positive_prompt, character_seed, idx, job_id
-        )
+        async with _pollinations_semaphore:
+            path = await loop.run_in_executor(
+                None, _pollinations_cinematic, positive_prompt, character_seed, idx, job_id
+            )
         if path:
             from image_processor import validate_image
             if validate_image(path):
@@ -265,24 +268,25 @@ async def _get_image_cinematic(
 
     # PRIORIDAD 5: Pollinations FLUX (Último Fallback Gratuito)
     print(f"[Router] Escena {idx}: intentando Pollinations FLUX (Último recurso)...")
-    for attempt in range(3):
-        # En el tercer intento, simplificar el prompt
-        prompt_to_use = positive_prompt if attempt < 2 else keyword + ", cinematic, photorealistic, 9:16 vertical"
-        
-        p = await loop.run_in_executor(
-            None, _pollinations_cinematic, prompt_to_use, character_seed + attempt * 111, idx, job_id
-        )
-        if p:
-            from image_processor import validate_image
-            if validate_image(p):
-                p = _apply_upscale(p, upscaler, fast_mode)
-                _image_cache[cache_key] = p
-                print(f"[Router] Escena {idx}: OK via Pollinations (intento {attempt+1})")
-                return idx, p
-        
-        if attempt < 2:
-            print(f"[Router] Pollinations intento {attempt+1} fallo, reintentando...")
-            await asyncio.sleep(2)
+    async with _pollinations_semaphore:
+        for attempt in range(3):
+            # En el tercer intento, simplificar el prompt
+            prompt_to_use = positive_prompt if attempt < 2 else keyword + ", cinematic, photorealistic, 9:16 vertical"
+            
+            p = await loop.run_in_executor(
+                None, _pollinations_cinematic, prompt_to_use, character_seed + attempt * 111, idx, job_id
+            )
+            if p:
+                from image_processor import validate_image
+                if validate_image(p):
+                    p = _apply_upscale(p, upscaler, fast_mode)
+                    _image_cache[cache_key] = p
+                    print(f"[Router] Escena {idx}: OK via Pollinations (intento {attempt+1})")
+                    return idx, p
+            
+            if attempt < 2:
+                print(f"[Router] Pollinations intento {attempt+1} fallo, reintentando...")
+                await asyncio.sleep(2)
 
 
     # ERROR CRÍTICO: Ningún proveedor devolvió imagen real válida
