@@ -433,32 +433,17 @@ def _huggingface_flux_dev(
 ) -> str | None:
     """HuggingFace FLUX Dev — Gratis con token, alta calidad."""
     try:
-        models = [
-            "black-forest-labs/FLUX.1-dev",
-            "stabilityai/stable-diffusion-xl-base-1.0",
-        ]
-        for model in models:
-            r = requests.post(
-                f"https://api-inference.huggingface.co/models/{model}",
-                headers={"Authorization": f"Bearer {hf_token}"},
-                json={
-                    "inputs": prompt,
-                    "parameters": {
-                        "width": 576,
-                        "height": 1024,
-                        "seed": seed,
-                        "num_inference_steps": 28,
-                    }
-                },
-                timeout=60,
-            )
-            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image"):
-                img = Image.open(io.BytesIO(r.content)).convert("RGB")
-                img = _crop_to_tiktok(img, HD_W, HD_H)
-                out = f"outputs/media/{job_id}/img_{idx}.jpg"
-                img.save(out, "JPEG", quality=92)
-                print(f"[HuggingFace FLUX] OK escena {idx}")
-                return out
+        from huggingface_hub import InferenceClient
+        client = InferenceClient(token=hf_token)
+        # FLUX.1-schnell is fast and freely available on Inference API
+        image = client.text_to_image(prompt, model="black-forest-labs/FLUX.1-schnell")
+        
+        # Guardar imagen generada
+        img = _crop_to_tiktok(image, HD_W, HD_H)
+        out = f"outputs/media/{job_id}/img_{idx}.jpg"
+        img.save(out, "JPEG", quality=92)
+        print(f"[HuggingFace FLUX] OK escena {idx}")
+        return out
     except Exception as e:
         print(f"[HuggingFace FLUX] Error: {e}")
     return None
