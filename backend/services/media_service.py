@@ -375,9 +375,6 @@ def _pollinations_cinematic(prompt: str, seed: int, idx: int, job_id: str) -> st
         )
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
-            "Referer": "https://pollinations.ai/",
         }
         r = requests.get(url, headers=headers, timeout=90, allow_redirects=True)
         
@@ -427,9 +424,6 @@ def _pollinations_schnell(prompt: str, seed: int, idx: int, job_id: str) -> str 
         )
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
-            "Referer": "https://pollinations.ai/",
         }
         r = requests.get(url, headers=headers, timeout=60, allow_redirects=True)
         if r.status_code == 200 and len(r.content) > 5000:
