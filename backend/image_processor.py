@@ -41,9 +41,9 @@ def validate_image(path: str) -> bool:
         logger.warning("[Validate] No existe: %s", path)
         return False
     
-    # 1. Tamaño mínimo (15KB) para evitar miniaturas corruptas o mini-placeholders
+    # 1. Tamaño mínimo (3KB) para evitar miniaturas corruptas o mini-placeholders
     size = os.path.getsize(path)
-    if size < 15000:
+    if size < 3000:
         logger.error("[Validate] Archivo demasiado pequeño (%d bytes): %s. Probable fallo de API.", size, path)
         return False
 
@@ -265,38 +265,29 @@ def normalize_batch(
         out_path = os.path.join(output_dir, f"normalized_{idx:03d}.jpg")
         success = False
 
-        # 1. Verificar si es duplicada antes de procesar
-        img_hash = get_image_hash(src)
-        if img_hash and img_hash in seen_hashes:
-            logger.warning("[Batch] Escena %d/%d: Imagen duplicada detectada. Usando fallback.", idx + 1, len(source_paths))
-            # No usamos la duplicada, forzamos fallback para tener variedad
-        else:
-            if img_hash:
-                seen_hashes.add(img_hash)
+        # Intento de normalización con retry (BUG FIX: normalize_image dentro del loop)
+        for attempt in range(max_retries + 1):
+            if not validate_image(src):
+                logger.warning(
+                    "[Batch] Escena %d/%d: imagen fuente inválida antes de normalizar (intento %d/%d)",
+                    idx + 1, len(source_paths), attempt + 1, max_retries + 1
+                )
+                break
 
-            # Intento de normalización con retry (BUG FIX: normalize_image dentro del loop)
-            for attempt in range(max_retries + 1):
-                if not validate_image(src):
-                    logger.warning(
-                        "[Batch] Escena %d/%d: imagen fuente inválida antes de normalizar (intento %d/%d)",
-                        idx + 1, len(source_paths), attempt + 1, max_retries + 1
-                    )
-                    break
-
-                result = normalize_image(src, out_path)
-                if result and validate_image(result):
-                    results.append(result)
-                    success = True
-                    logger.info(
-                        "[Batch] Escena %d/%d OK (intento %d)",
-                        idx + 1, len(source_paths), attempt + 1
-                    )
-                    break
-                else:
-                    logger.warning(
-                        "[Batch] Escena %d/%d falló normalización (intento %d/%d)",
-                        idx + 1, len(source_paths), attempt + 1, max_retries + 1
-                    )
+            result = normalize_image(src, out_path)
+            if result and validate_image(result):
+                results.append(result)
+                success = True
+                logger.info(
+                    "[Batch] Escena %d/%d OK (intento %d)",
+                    idx + 1, len(source_paths), attempt + 1
+                )
+                break
+            else:
+                logger.warning(
+                    "[Batch] Escena %d/%d falló normalización (intento %d/%d)",
+                    idx + 1, len(source_paths), attempt + 1, max_retries + 1
+                )
 
         if not success:
             logger.error(
